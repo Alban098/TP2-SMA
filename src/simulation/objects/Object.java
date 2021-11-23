@@ -25,7 +25,8 @@ public class Object extends RenderableItem {
 
     public enum Type {
         A,
-        B;
+        B,
+        C;
 
         public static Type change(Type initial) {
             Type newType;

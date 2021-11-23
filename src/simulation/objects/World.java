@@ -3,8 +3,13 @@ package simulation.objects;
 import engine.objects.RenderableItem;
 import engine.rendering.Mesh;
 import org.joml.Vector2i;
+import simulation.Constants;
+import simulation.Simulation;
+
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class World {
 
@@ -165,5 +170,52 @@ public class World {
 
     public boolean putDown(Agent agent, Object object) {
         return put(object, new Vector2i(positions.get(agent).getX(), positions.get(agent).getZ()));
+    }
+
+    public void update(float elapsedTime) {
+        for (Chunk c : chunks) {
+            c.setMarker(c.getMarker() * Constants.MARKER_ATTENUATION);
+            c.getAddedColor().x = c.getMarker();
+        }
+    }
+
+    public void putMarker(Agent source) {
+        Chunk sourceChunk = positions.get(source);
+        for (int i = -Constants.MARKER_RADIUS; i <= Constants.MARKER_RADIUS; i++) {
+            for (int j = -Constants.MARKER_RADIUS; j <= Constants.MARKER_RADIUS; j++) {
+                Chunk chunk = getChunk(sourceChunk.getX() + i, sourceChunk.getZ() + j);
+                float dist = i*i + j*j;
+                dist = (float) Math.sqrt(dist) + 1;
+                if (chunk != null)
+                    chunk.setMarker(1f/dist);
+            }
+        }
+    }
+
+    public Agent lookForAgentInNeed(Agent source) {
+        Chunk sourceChunk = positions.get(source);
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                Chunk chunk = getChunk(sourceChunk.getX() + i, sourceChunk.getZ() + j);
+                if (chunk != null) {
+                    Agent agent = chunk.getAgent();
+                    if (agent != null && agent != source && agent.isAskingForHelp())
+                        return agent;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Map<Float, Direction> getMarkers(Agent source) {
+        Map<Float, Direction> markers = new TreeMap<>(Comparator.reverseOrder());
+        Chunk sourceChunk = positions.get(source);
+        for (Direction dir : Direction.values()) {
+            if (dir == Direction.NONE)
+                continue;
+            Vector2i displacement = dir.getDisplacement(1);
+            markers.put(getChunk(sourceChunk.getX() + displacement.x, sourceChunk.getZ() + displacement.y).getMarker(), dir);
+        }
+        return markers;
     }
 }

@@ -53,6 +53,8 @@ public class Renderer {
         shaderProgram.createUniform("ambientLight");
         shaderProgram.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
 
+        shaderProgram.createUniform("addedColor");
+
         skyBoxShaderProgram = new ShaderProgram();
         skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/sb_vertex.vs"));
         skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/sb_fragment.fs"));
@@ -121,6 +123,7 @@ public class Renderer {
             mesh.renderList(mapMeshes.get(mesh), (RenderableItem gameItem) -> {
                         Matrix4f modelViewMatrix = transformation.buildModelViewMatrix(gameItem, viewMatrix);
                         shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
+                        shaderProgram.setUniform("addedColor", gameItem.getAddedColor());
                     }
             );
         }

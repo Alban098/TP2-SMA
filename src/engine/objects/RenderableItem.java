@@ -2,6 +2,7 @@ package engine.objects;
 
 import engine.rendering.Mesh;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class RenderableItem {
 
@@ -13,11 +14,16 @@ public class RenderableItem {
 
     private final Vector3f rotation;
 
+    private final Vector4f addedColor;
+
     public RenderableItem() {
         position = new Vector3f();
         scale = 1;
         rotation = new Vector3f();
+        addedColor = new Vector4f();
     }
+
+
 
     public RenderableItem(Mesh mesh) {
         this();
@@ -58,5 +64,9 @@ public class RenderableItem {
 
     public void setMesh(Mesh mesh) {
         this.mesh = mesh;
+    }
+
+    public Vector4f getAddedColor() {
+        return addedColor;
     }
 }

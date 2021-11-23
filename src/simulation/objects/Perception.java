@@ -2,9 +2,9 @@ package simulation.objects;
 
 public class Perception {
 
-    private Object object;
-    private Agent source;
-    private float help_marker;
+    private final Object object;
+    private final Agent source;
+    private final float help_marker;
 
     public Perception(Agent source, Object object, float help_marker) {
         this.object = object;
@@ -20,7 +20,7 @@ public class Perception {
         return source;
     }
 
-    public float getHelp_marker() {
+    public float getHelpMarker() {
         return help_marker;
     }
 }

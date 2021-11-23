@@ -9,6 +9,7 @@ public class Chunk extends RenderableItem {
     private final int z;
     private Object object;
     private Agent agent;
+    private float marker;
 
     public Chunk(Mesh mesh, int x, int z) {
         super(mesh);
@@ -32,11 +33,19 @@ public class Chunk extends RenderableItem {
         this.object = object;
     }
 
-    public RenderableItem getAgent() {
+    public Agent getAgent() {
         return agent;
     }
 
     public void setAgent(Agent agent) {
         this.agent = agent;
+    }
+
+    public void setMarker(float marker) {
+        this.marker = marker;
+    }
+
+    public float getMarker() {
+        return marker;
     }
 }

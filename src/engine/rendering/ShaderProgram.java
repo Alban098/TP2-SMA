@@ -83,13 +83,6 @@ public class ShaderProgram {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
-    public void setUniform(String uniformName, PointLight[] pointLights) {
-        int numLights = pointLights != null ? pointLights.length : 0;
-        for (int i = 0; i < numLights; i++) {
-            setUniform(uniformName, pointLights[i], i);
-        }
-    }
-
     public void setUniform(String uniformName, PointLight pointLight, int pos) {
         setUniform(uniformName + "[" + pos + "]", pointLight);
     }
