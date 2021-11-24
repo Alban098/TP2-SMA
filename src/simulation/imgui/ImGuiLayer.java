@@ -34,7 +34,7 @@ public class ImGuiLayer {
             ImGui.separator();
             if (ImGui.menuItem("Reset")) {
                 simulation.reset();
-                engine.reinitImGuiTexture();
+                engine.prepareImGuiTexture();
             }
             ImGui.endMenu();
         }

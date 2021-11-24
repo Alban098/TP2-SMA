@@ -33,11 +33,11 @@ public class Simulation extends ConcreteLogic {
     public void init(Window window) throws Exception {
         super.init(window);
         agents = new ArrayList<>();
-        worldMesh = OBJLoader.loadMesh("/models/cube.obj").setMaterial(new Material(new Texture("textures/grassblock.png"), 1f));
+        worldMesh = OBJLoader.loadMesh("/models/quad.obj").setMaterial(new Material(new Texture("textures/Ground_04.png"), new Texture("textures/Ground_04_Nrm.png"), 1f));
         aMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.A_COLOR, 1f));
         bMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.B_COLOR, 1f));
         cMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.C_COLOR, 1f));
-        agentMesh = OBJLoader.loadMesh("/models/agent.obj").setMaterial(new Material(new Texture("textures/agent.png"), 1f));
+        agentMesh = OBJLoader.loadMesh("/models/agent.obj").setMaterial(new Material(new Texture("textures/agent.png"), null, 1f));
         generateScene();
     }
 
@@ -97,7 +97,7 @@ public class Simulation extends ConcreteLogic {
     public void update(Window window, float elapsedTime, MouseInput mouseInput) {
         super.update(window, elapsedTime, mouseInput);
         if (!paused) {
-            scene.getWorld().update(elapsedTime);
+            scene.getWorld().update();
             for (Agent agent : agents)
                 agent.update(elapsedTime);
         }

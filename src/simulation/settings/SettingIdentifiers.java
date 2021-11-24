@@ -19,9 +19,9 @@ public enum SettingIdentifiers {
     A_COLOR("A Objects color"),
     B_COLOR("B Objects color"),
     C_COLOR("C Objects color"),
-    SPEED("Simulation speed (Update/FPS)"),
+    SPEED("Simulation speed (Updates/s)"),
     VSYNC("Use V-Sync"),
-    FPS_TARGET("Target FPS (Used for Update)");
+    FPS_TARGET("Target FPS");
 
     private final String description;
 

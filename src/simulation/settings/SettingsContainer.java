@@ -6,7 +6,6 @@ import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;
 import org.joml.Vector4f;
 import simulation.Constants;
-import simulation.Simulation;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -17,16 +16,14 @@ import java.util.Properties;
 
 public class SettingsContainer {
 
-    private final String file;
     private final Map<SettingIdentifiers, Setting<?>> settings;
 
-    public SettingsContainer(Simulation sim, String file) {
+    public SettingsContainer(String file) {
         this.settings = new HashMap<>();
-        this.file = file;
 
         settings.put(SettingIdentifiers.MAX_MOVE_DIST, new Setting<>(SettingIdentifiers.MAX_MOVE_DIST, 1, (Setting<Integer> setting) -> {
             int[] tmp = {setting.getValue()};
-            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 15)) {
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 10)) {
                 setting.setValue(tmp[0]);
                 Constants.MAX_MOVE_DIST = setting.getValue();
             }
@@ -35,7 +32,7 @@ public class SettingsContainer {
             int[] tmp = {setting.getValue()};
             if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 20, 240)) {
                 setting.setValue(tmp[0]);
-                Engine.TARGET_FPS = setting.getValue();
+                Constants.TARGET_FPS = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.K_PLUS, new Setting<>(SettingIdentifiers.K_PLUS, 0.1f, (Setting<Float> setting) -> {
@@ -151,11 +148,11 @@ public class SettingsContainer {
                 Constants.MARKER_ATTENUATION = setting.getValue();
             }
         }));
-        settings.put(SettingIdentifiers.SPEED, new Setting<>(SettingIdentifiers.SPEED, 1f, (Setting<Float> setting) -> {
-            float[] tmp = {setting.getValue()};
-            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 0.1f, 10f)) {
+        settings.put(SettingIdentifiers.SPEED, new Setting<>(SettingIdentifiers.SPEED, 60, (Setting<Integer> setting) -> {
+            int[] tmp = {setting.getValue()};
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 3000)) {
                 setting.setValue(tmp[0]);
-                Engine.TARGET_UPS = setting.getValue();
+                Constants.TARGET_UPS = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.SHOW_MARKERS, new Setting<>(SettingIdentifiers.SHOW_MARKERS, true, (Setting<Boolean> setting) -> {
@@ -172,10 +169,10 @@ public class SettingsContainer {
                 Constants.VSYNC = setting.getValue();
             }
         }));
-        loadFile();
+        loadFile(file);
     }
 
-    public void loadFile() {
+    public void loadFile(String file) {
         try {
             Properties prop = new Properties();
             prop.load(new FileReader(file));
@@ -187,7 +184,7 @@ public class SettingsContainer {
         applySettings();
     }
 
-    public void saveFile() {
+    public void saveFile(String file) {
         try {
             Properties prop = new Properties();
             for (Setting<?> setting : settings.values())
@@ -223,9 +220,9 @@ public class SettingsContainer {
                 case A_COLOR -> Constants.A_COLOR = (Vector4f) setting.getValue();
                 case B_COLOR -> Constants.B_COLOR = (Vector4f) setting.getValue();
                 case C_COLOR -> Constants.C_COLOR = (Vector4f) setting.getValue();
-                case SPEED -> Engine.TARGET_UPS = (float) setting.getValue();
+                case SPEED -> Constants.TARGET_UPS = (int) setting.getValue();
                 case VSYNC -> Constants.VSYNC = (boolean) setting.getValue();
-                case FPS_TARGET -> Engine.TARGET_FPS = (int) setting.getValue();
+                case FPS_TARGET -> Constants.TARGET_FPS = (int) setting.getValue();
             }
         }
     }

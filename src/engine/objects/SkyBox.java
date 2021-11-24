@@ -11,7 +11,7 @@ public class SkyBox extends RenderableItem {
         super();
         Mesh mesh = OBJLoader.loadMesh(objModel);
         Texture texture = new Texture(textureFile);
-        mesh.setMaterial(new Material(texture, 0.0f));
+        mesh.setMaterial(new Material(texture, null, 0.0f));
         setMesh(mesh);
         setPosition(0, 0, 0);
     }

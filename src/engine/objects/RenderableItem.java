@@ -23,8 +23,6 @@ public class RenderableItem {
         addedColor = new Vector4f();
     }
 
-
-
     public RenderableItem(Mesh mesh) {
         this();
         this.mesh = mesh;

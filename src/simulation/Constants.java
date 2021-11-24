@@ -23,4 +23,7 @@ public class Constants {
     public static Vector4f A_COLOR = new Vector4f(1f, 0f, 0f, 1f);
     public static Vector4f B_COLOR = new Vector4f(0f, 0f, 1f, 1f);
     public static Vector4f C_COLOR = new Vector4f(1f, 0f, 1f, 1f);
+
+    public static int TARGET_FPS = 60;
+    public static int TARGET_UPS = 60;
 }

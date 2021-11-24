@@ -33,10 +33,6 @@ public class PointLight {
         return color;
     }
 
-    public void setColor(Vector3f color) {
-        this.color = color;
-    }
-
     public Vector3f getPosition() {
         return position;
     }
@@ -49,25 +45,17 @@ public class PointLight {
         return intensity;
     }
 
-    public void setIntensity(float intensity) {
-        this.intensity = intensity;
-    }
-
     public Attenuation getAttenuation() {
         return attenuation;
     }
 
-    public void setAttenuation(Attenuation attenuation) {
-        this.attenuation = attenuation;
-    }
-
     public static class Attenuation {
 
-        private float constant;
+        private final float constant;
 
-        private float linear;
+        private final float linear;
 
-        private float exponent;
+        private final float exponent;
 
         public Attenuation(float constant, float linear, float exponent) {
             this.constant = constant;
@@ -79,24 +67,12 @@ public class PointLight {
             return constant;
         }
 
-        public void setConstant(float constant) {
-            this.constant = constant;
-        }
-
         public float getLinear() {
             return linear;
         }
 
-        public void setLinear(float linear) {
-            this.linear = linear;
-        }
-
         public float getExponent() {
             return exponent;
-        }
-
-        public void setExponent(float exponent) {
-            this.exponent = exponent;
         }
     }
 }

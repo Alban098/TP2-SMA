@@ -1,10 +1,18 @@
 package engine.rendering;
 
 import static org.lwjgl.glfw.GLFW.*;
+
+import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiConfigFlags;
+import imgui.gl3.ImGuiImplGl3;
+import imgui.glfw.ImGuiImplGlfw;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import simulation.Constants;
+import simulation.imgui.ImGuiLayer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
@@ -14,21 +22,23 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
+    private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
+    private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
+    private final ImGuiLayer imGuiLayer;
+
     private final String title;
 
     private int width;
-
     private int height;
-
     private long windowHandle;
-
     private boolean resized;
 
-    public Window(String title, int width, int height) {
+    public Window(String title, int width, int height, ImGuiLayer imGuiLayer) {
         this.title = title;
         this.width = width;
         this.height = height;
         this.resized = false;
+        this.imGuiLayer = imGuiLayer;
     }
 
     public void init() {
@@ -99,14 +109,18 @@ public class Window {
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glEnable(GL_DEPTH_TEST);
+
+        ImGui.createContext();
+        ImGuiIO io = ImGui.getIO();
+        io.addConfigFlags(ImGuiConfigFlags.ViewportsEnable);
+
+        imGuiGlfw.init(windowHandle, true);
+        imGuiGl3.init(null);
+        imGuiLayer.init();
     }
 
     public long getWindowHandle() {
         return windowHandle;
-    }
-
-    public void setClearColor(float r, float g, float b, float alpha) {
-        glClearColor(r, g, b, alpha);
     }
 
     public boolean isKeyPressed(int keyCode) {
@@ -115,10 +129,6 @@ public class Window {
 
     public boolean windowShouldClose() {
         return glfwWindowShouldClose(windowHandle);
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public int getWidth() {
@@ -145,5 +155,33 @@ public class Window {
         updateVSync();
         glfwSwapBuffers(windowHandle);
         glfwPollEvents();
+    }
+
+    public void prepareImGui() {
+        imGuiGlfw.newFrame();
+        ImGui.newFrame();
+    }
+
+    public void updateImGui(float elapsedTime, int nbUpdate) {
+        imGuiLayer.render(elapsedTime, nbUpdate == 0 ? Constants.TARGET_UPS : (int) (nbUpdate / elapsedTime));
+        ImGui.render();
+        imGuiGl3.renderDrawData(ImGui.getDrawData());
+
+        if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
+            final long backupWindowPtr = org.lwjgl.glfw.GLFW.glfwGetCurrentContext();
+            ImGui.updatePlatformWindows();
+            ImGui.renderPlatformWindowsDefault();
+            org.lwjgl.glfw.GLFW.glfwMakeContextCurrent(backupWindowPtr);
+        }
+    }
+
+    public void cleanup() {
+        imGuiGl3.dispose();
+        imGuiGlfw.dispose();
+        ImGui.destroyContext();
+    }
+
+    public void prepareImGuiTexture() {
+        imGuiLayer.init();
     }
 }

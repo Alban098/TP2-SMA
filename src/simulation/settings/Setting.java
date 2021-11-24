@@ -1,5 +1,7 @@
 package simulation.settings;
 
+import org.joml.Vector4f;
+
 import java.awt.*;
 import java.util.function.Consumer;
 
@@ -37,17 +39,18 @@ public class Setting<T> {
     }
 
     public String serializedValue() {
-        if (value instanceof Color)
-            return String.valueOf(((Color) value).getRGB());
-        else
+        if (value instanceof Vector4f val) {
+            return val.x + "/" + val.y + "/" + val.z + "/" + val.w;
+        } else
             return value.toString();
     }
 
     public void setSerializedValue(String val) {
         if (val != null) {
-            if (value instanceof Color)
-                value = (T) new Color(Integer.parseInt(val));
-            else if (value instanceof Float)
+            if (value instanceof Vector4f) {
+                String[] elements = val.split("/");
+                value = (T) new Vector4f(Float.parseFloat(elements[0]), Float.parseFloat(elements[1]), Float.parseFloat(elements[2]), Float.parseFloat(elements[3]));
+            } else if (value instanceof Float)
                 value = (T) Float.valueOf(val);
             else if (value instanceof Boolean)
                 value = (T) Boolean.valueOf(val);

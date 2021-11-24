@@ -37,7 +37,7 @@ public abstract class ConcreteLogic implements ILogic {
 
     @Override
     public void init(Window window) throws Exception {
-        renderer.init(window);
+        renderer.init();
 
         scene = new Scene();
 

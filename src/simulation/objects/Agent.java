@@ -96,7 +96,7 @@ public class Agent extends RenderableItem {
             do {
                 dir = Direction.random(rand);
                 dist = rand.nextInt(Constants.MAX_MOVE_DIST) + 1;
-                if (++attempts > 10) {
+                if (++attempts > 3) {
                     dir = Direction.NONE;
                     dist = 0;
                     break;
@@ -173,7 +173,7 @@ public class Agent extends RenderableItem {
         do {
             dir = Direction.random(rand);
             dist = rand.nextInt(Constants.MAX_MOVE_DIST) + 1;
-            if (++attempts > 10) {
+            if (++attempts > 3) {
                 dir = Direction.NONE;
                 dist = 0;
                 break;

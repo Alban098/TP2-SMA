@@ -3,16 +3,11 @@ package simulation.objects;
 import engine.objects.RenderableItem;
 import engine.rendering.Mesh;
 import org.joml.Vector2i;
-import org.joml.Vector4f;
 import org.joml.Vector4i;
 import simulation.Constants;
-import simulation.Simulation;
 
 import java.nio.ByteBuffer;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class World {
 
@@ -75,7 +70,6 @@ public class World {
             case SOUTH_EAST -> rotations.put(agent, 225f);
             case SOUTH_WEST -> rotations.put(agent, 135f);
         }
-
         return moved;
     }
 
@@ -137,14 +131,16 @@ public class World {
 
             Float lastRot = lastRotation.get(a);
             Float nextRot = rotations.get(a);
-            if (lastPos != null && nextPos != null) {
+            if (lastPos != null && nextPos != null && (lastPos.getX() != nextPos.getX() || lastPos.getZ() != nextPos.getZ())) {
                 float x = (1 - percent) * lastPos.getX() + percent * nextPos.getX();
                 float z = (1 - percent) * lastPos.getZ() + percent * nextPos.getZ();
                 a.setPosition(x+.5f, 1, z+.5f);
+            } else if (nextPos != null){
+                a.setPosition(nextPos.getX() + 0.5f, 1, nextPos.getZ() + 0.5f);
             }
 
             float scaledPercent = Math.min(percent * 5, 1);
-            if (lastRot != null && nextRot != null) {
+            if (lastRot != null && nextRot != null && (!lastRot.equals(nextRot))) {
                 float dRot = nextRot - lastRot;
                 //Just for the agent to turn toward the fastest direction
                 if (dRot > 180)
@@ -152,8 +148,14 @@ public class World {
                 else if (dRot < -180)
                     dRot += 360;
                 a.setRotation(0, lastRot + scaledPercent * dRot, 0);
+            } else if (nextRot != null) {
+                a.setRotation(0, nextRot, 0);
             }
             a.anim();
+            if (percent >= 0.99f) { //Stop the animation if finished (prevent looping when not moving)
+                lastPosition.put(a, positions.get(a));
+                lastRotation.put(a, rotations.get(a));
+            }
         }
     }
 
@@ -175,9 +177,11 @@ public class World {
         return put(object, new Vector2i(positions.get(agent).getX(), positions.get(agent).getZ()));
     }
 
-    public void update(float elapsedTime) {
+    public void update() {
         for (Chunk c : chunks) {
             c.setMarker(c.getMarker() * Constants.MARKER_ATTENUATION);
+            if (c.getMarker() < .05)
+                c.setMarker(0);
             if (Constants.SHOW_MARKERS)
                 c.getAddedColor().x = c.getMarker();
             else
@@ -192,8 +196,9 @@ public class World {
                 Chunk chunk = getChunk(sourceChunk.getX() + i, sourceChunk.getZ() + j);
                 float dist = i*i + j*j;
                 dist = (float) Math.sqrt(dist) + 1;
-                if (chunk != null)
-                    chunk.setMarker(1f/dist);
+                if (chunk != null) {
+                    chunk.setMarker(1f / dist);
+                }
             }
         }
     }

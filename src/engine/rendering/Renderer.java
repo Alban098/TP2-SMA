@@ -35,7 +35,7 @@ public class Renderer {
         specularPower = 10f;
     }
 
-    public void init(Window window) throws Exception {
+    public void init() throws Exception {
         // Create shader
         shaderProgram = new ShaderProgram();
         shaderProgram.createVertexShader(Utils.loadResource("/shaders/vertex.vs"));
@@ -46,6 +46,7 @@ public class Renderer {
         shaderProgram.createUniform("projectionMatrix");
         shaderProgram.createUniform("modelViewMatrix");
         shaderProgram.createUniform("texture_sampler");
+        shaderProgram.createUniform("normal_sampler");
         // Create uniform for material
         shaderProgram.createMaterialUniform("material");
         // Create lighting related uniforms
@@ -116,6 +117,7 @@ public class Renderer {
         renderLights(viewMatrix, sceneLight);
 
         shaderProgram.setUniform("texture_sampler", 0);
+        shaderProgram.setUniform("normal_sampler", 1);
         // Render each mesh with the associated game Items
         Map<Mesh, List<RenderableItem>> mapMeshes = scene.getMeshes();
         for (Mesh mesh : mapMeshes.keySet()) {

@@ -15,8 +15,7 @@ import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.glBindTexture;
 import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
@@ -128,11 +127,19 @@ public class Mesh {
 
     private void initRender() {
         Texture texture = material.getTexture();
+        Texture normal = material.getNormal();
         if (texture != null) {
             // Activate firs texture bank
             glActiveTexture(GL_TEXTURE0);
             // Bind the texture
             texture.bind();
+        }
+
+        if (normal != null) {
+            // Activate firs texture bank
+            glActiveTexture(GL_TEXTURE1);
+            // Bind the texture
+            normal.bind();
         }
 
         // Draw the mesh

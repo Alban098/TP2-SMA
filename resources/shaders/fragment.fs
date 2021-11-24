@@ -30,10 +30,12 @@ struct Material
     vec4 diffuse;
     vec4 specular;
     int hasTexture;
+    int hasNormal;
     float reflectance;
 };
 
 uniform sampler2D texture_sampler;
+uniform sampler2D normal_sampler;
 uniform vec3 ambientLight;
 uniform vec4 addedColor;
 uniform float specularPower;
@@ -101,7 +103,15 @@ void main()
     {
         if ( pointLights[i].intensity > 0 )
         {
-            diffuseSpecularComp += calcPointLight(pointLights[i], mvVertexPos, mvVertexNormal);
+            if (material.hasNormal == 1)
+            {
+                vec4 normal = texture(normal_sampler, outTexCoord);
+                diffuseSpecularComp += calcPointLight(pointLights[i], mvVertexPos, vec3(normal.xyz));
+            }
+            else
+            {
+                diffuseSpecularComp += calcPointLight(pointLights[i], mvVertexPos, mvVertexNormal);
+            }
         }
     }
     
