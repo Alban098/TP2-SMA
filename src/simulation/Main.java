@@ -1,14 +1,17 @@
 package simulation;
 
 import engine.rendering.Engine;
-import engine.rendering.ILogic;
- 
+import simulation.imgui.ImGuiLayer;
+import simulation.settings.SettingsContainer;
+
 public class Main {
  
     public static void main(String[] args) {
         try {
-            ILogic logic = new Simulation();
-            Engine engine = new Engine("SMA", 600, 480, true, logic);
+            Simulation logic = new Simulation();
+            SettingsContainer settingsContainer = new SettingsContainer(logic, "config.ini");
+            ImGuiLayer imgui = new ImGuiLayer(logic, settingsContainer);
+            Engine engine = new Engine("SMA", 600, 480, true, logic, imgui);
             engine.run();
         } catch (Exception excp) {
             excp.printStackTrace();

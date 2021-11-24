@@ -7,7 +7,6 @@ import engine.rendering.Mesh;
 import engine.utils.OBJLoader;
 import engine.rendering.Texture;
 import org.joml.Vector2i;
-import org.joml.Vector4f;
 import simulation.objects.Agent;
 import simulation.objects.Object;
 import simulation.objects.World;
@@ -19,19 +18,26 @@ import java.util.Random;
 public class Simulation extends ConcreteLogic {
 
     private List<Agent> agents;
+    private boolean paused = false;
+    private Mesh worldMesh;
+    private Mesh agentMesh;
+    private Mesh aMesh;
+    private Mesh bMesh;
+    private Mesh cMesh;
 
     @Override
     public void init(Window window) throws Exception {
         super.init(window);
-
         agents = new ArrayList<>();
+        worldMesh = OBJLoader.loadMesh("/models/cube.obj").setMaterial(new Material(new Texture("textures/grassblock.png"), 1f));
+        aMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.A_COLOR, 1f));
+        bMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.B_COLOR, 1f));
+        cMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.C_COLOR, 1f));
+        agentMesh = OBJLoader.loadMesh("/models/agent.obj").setMaterial(new Material(new Texture("textures/agent.png"), 1f));
+        generateScene();
+    }
 
-        Mesh worldMesh = OBJLoader.loadMesh("/models/cube.obj").setMaterial(new Material(new Texture("textures/grassblock.png"), 1f));
-        Mesh aMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.RED, 1f));
-        Mesh bMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.BLUE, 1f));
-        Mesh cMesh = OBJLoader.loadMesh("/models/sphere.obj").setMaterial(new Material(Constants.PURPLE, 1f));
-        Mesh agentMesh = OBJLoader.loadMesh("/models/agent.obj").setMaterial(new Material(new Texture("textures/agent.png"), 1f));
-
+    private void generateScene() {
         World world = new World(Constants.WORLD_SIZE, Constants.WORLD_SIZE);
         world.init(worldMesh);
         scene.setWorld(world);
@@ -40,8 +46,8 @@ public class Simulation extends ConcreteLogic {
         generateObjects(aMesh, Constants.A_COUNT, Object.Type.A);
         generateObjects(bMesh, Constants.B_COUNT, Object.Type.B);
         generateObjects(cMesh, Constants.C_COUNT, Object.Type.C);
-        //init
     }
+
 
     private void generateAgents(Mesh mesh, int count) {
         Random rand = new Random();
@@ -79,14 +85,36 @@ public class Simulation extends ConcreteLogic {
     @Override
     public void update(Window window, float elapsedTime, MouseInput mouseInput) {
         super.update(window, elapsedTime, mouseInput);
-        scene.getWorld().update(elapsedTime);
-        for (Agent agent : agents)
-            agent.update(elapsedTime);
+        if (!paused) {
+            scene.getWorld().update(elapsedTime);
+            for (Agent agent : agents)
+                agent.update(elapsedTime);
+        }
     }
 
     @Override
     public void updateCamera(Window window, float percent, MouseInput mouseInput) {
         super.updateCamera(window, percent, mouseInput);
         scene.getWorld().updateAnim(percent);
+        aMesh.getMaterial().setAmbientColour(Constants.A_COLOR);
+        bMesh.getMaterial().setAmbientColour(Constants.B_COLOR);
+        cMesh.getMaterial().setAmbientColour(Constants.C_COLOR);
+    }
+
+    @Override
+    public void pause() {
+        paused = true;
+    }
+
+    @Override
+    public void resume() {
+        paused = false;
+    }
+
+    @Override
+    public void reset() {
+        scene.reset();
+        agents.clear();
+        generateScene();
     }
 }

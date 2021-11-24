@@ -61,5 +61,8 @@ public class Scene {
     public void setSceneLight(SceneLight sceneLight) {
         this.sceneLight = sceneLight;
     }
-    
+
+    public void reset() {
+        meshMap.clear();
+    }
 }

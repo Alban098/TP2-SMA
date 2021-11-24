@@ -15,4 +15,10 @@ public interface ILogic {
     void render(Window window);
     
     void cleanup();
+
+    void pause();
+
+    void resume();
+
+    void reset();
 }

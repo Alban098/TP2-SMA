@@ -51,8 +51,6 @@ public abstract class ConcreteLogic implements ILogic {
         SkyBox skyBox = new SkyBox("/models/skybox.obj", "textures/skybox.png");
         skyBox.setScale(200f);
         scene.setSkyBox(skyBox);
-
-        // Point Light
     }
 
     @Override

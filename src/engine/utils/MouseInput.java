@@ -69,4 +69,9 @@ public class MouseInput {
     public boolean isRightButtonPressed() {
         return rightButtonPressed;
     }
+
+    public void pause() {
+        leftButtonPressed = false;
+        rightButtonPressed = false;
+    }
 }

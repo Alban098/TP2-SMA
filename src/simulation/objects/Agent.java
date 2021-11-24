@@ -93,9 +93,15 @@ public class Agent extends RenderableItem {
         if (hasHelp()) {
             Direction dir;
             int dist;
+            int attempts = 0;
             do {
                 dir = Direction.random(rand);
                 dist = rand.nextInt(Constants.MAX_MOVE_DIST) + 1;
+                if (++attempts > 10) {
+                    dir = Direction.NONE;
+                    dist = 0;
+                    break;
+                }
             } while(!world.canMove(this, dir, dist) || !world.canMove(slave, dir, dist));
 
             world.move(this, dir, dist);
@@ -164,9 +170,15 @@ public class Agent extends RenderableItem {
             return;
         Direction dir;
         int dist;
+        int attempts = 0;
         do {
             dir = Direction.random(rand);
             dist = rand.nextInt(Constants.MAX_MOVE_DIST) + 1;
+            if (++attempts > 10) {
+                dir = Direction.NONE;
+                dist = 0;
+                break;
+            }
         } while(!world.canMove(this, dir, dist));
 
         world.move(this, dir, dist);
