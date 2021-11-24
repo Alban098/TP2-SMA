@@ -1,6 +1,7 @@
 package simulation.imgui;
 
-import engine.rendering.ILogic;
+
+import engine.rendering.Engine;
 import imgui.ImGui;
 import simulation.Simulation;
 import simulation.settings.SettingIdentifiers;
@@ -13,12 +14,14 @@ import simulation.settings.SettingsContainer;
 public class SettingsLayer extends Layer {
 
     private final SettingsContainer settingsContainer;
-    private final ILogic sim;
+    private final Simulation sim;
+    private Engine engine;
+
     /**
      * Create a new instance of the Layer
      * @param settingsContainer the container linked to the layer
      */
-    public SettingsLayer(ILogic sim, SettingsContainer settingsContainer) {
+    public SettingsLayer(Simulation sim, SettingsContainer settingsContainer) {
         super();
         this.sim = sim;
         this.settingsContainer = settingsContainer;
@@ -34,8 +37,10 @@ public class SettingsLayer extends Layer {
         if (ImGui.button("Save Settings"))
             settingsContainer.saveFile();
         ImGui.sameLine(150);
-        if (ImGui.button("Reset"))
+        if (ImGui.button("Reset")) {
             sim.reset();
+            engine.reinitImGuiTexture();
+        }
         ImGui.sameLine(485);
         if (ImGui.button("Exit"))
             setVisible(false);
@@ -89,6 +94,8 @@ public class SettingsLayer extends Layer {
                 if (ImGui.treeNode("Misc")) {
                     settingsContainer.getSetting(SettingIdentifiers.SHOW_MARKERS).process();
                     settingsContainer.getSetting(SettingIdentifiers.SPEED).process();
+                    settingsContainer.getSetting(SettingIdentifiers.FPS_TARGET).process();
+                    settingsContainer.getSetting(SettingIdentifiers.VSYNC).process();
                     ImGui.treePop();
                 }
                 ImGui.endTabItem();
@@ -97,5 +104,9 @@ public class SettingsLayer extends Layer {
         ImGui.endTabBar();
 
         ImGui.end();
+    }
+
+    public void linkEngine(Engine engine) {
+        this.engine = engine;
     }
 }

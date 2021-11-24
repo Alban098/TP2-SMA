@@ -1,8 +1,10 @@
 package simulation;
 
 import org.joml.Vector4f;
+import simulation.settings.SettingIdentifiers;
 
 public class Constants {
+    public static boolean VSYNC = false;
     public static int MAX_MOVE_DIST = 1;
     public static float K_PLUS = 0.1f;
     public static float K_MINUS = 0.3f;

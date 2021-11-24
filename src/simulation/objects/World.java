@@ -3,9 +3,12 @@ package simulation.objects;
 import engine.objects.RenderableItem;
 import engine.rendering.Mesh;
 import org.joml.Vector2i;
+import org.joml.Vector4f;
+import org.joml.Vector4i;
 import simulation.Constants;
 import simulation.Simulation;
 
+import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -175,7 +178,10 @@ public class World {
     public void update(float elapsedTime) {
         for (Chunk c : chunks) {
             c.setMarker(c.getMarker() * Constants.MARKER_ATTENUATION);
-            c.getAddedColor().x = c.getMarker();
+            if (Constants.SHOW_MARKERS)
+                c.getAddedColor().x = c.getMarker();
+            else
+                c.getAddedColor().x = 0;
         }
     }
 
@@ -217,5 +223,25 @@ public class World {
             markers.put(getChunk(sourceChunk.getX() + displacement.x, sourceChunk.getZ() + displacement.y).getMarker(), dir);
         }
         return markers;
+    }
+
+    public void fillBuffer(ByteBuffer buffer) {
+        buffer.clear();
+        Vector4i color = new Vector4i(128, 128, 128, 255);
+        for (Chunk chunk : chunks) {
+            color.set(128, 128, 128, 255);
+            if (chunk.getObject() != null) {
+                switch (chunk.getObject().getType()) {
+                    case A -> color.set((int) (Constants.A_COLOR.x * 255), (int) (Constants.A_COLOR.y * 255), (int) (Constants.A_COLOR.z * 255), (int) (Constants.A_COLOR.w * 255));
+                    case B -> color.set((int) (Constants.B_COLOR.x * 255), (int) (Constants.B_COLOR.y * 255), (int) (Constants.B_COLOR.z * 255), (int) (Constants.B_COLOR.w * 255));
+                    case C -> color.set((int) (Constants.C_COLOR.x * 255), (int) (Constants.C_COLOR.y * 255), (int) (Constants.C_COLOR.z * 255), (int) (Constants.C_COLOR.w * 255));
+                }
+            }
+            buffer.put((byte) color.x);
+            buffer.put((byte) color.y);
+            buffer.put((byte) color.z);
+            buffer.put((byte) color.w);
+        }
+        buffer.flip();
     }
 }

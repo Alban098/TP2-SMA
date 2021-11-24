@@ -11,7 +11,7 @@ public class Main {
             Simulation logic = new Simulation();
             SettingsContainer settingsContainer = new SettingsContainer(logic, "config.ini");
             ImGuiLayer imgui = new ImGuiLayer(logic, settingsContainer);
-            Engine engine = new Engine("SMA", 600, 480, true, logic, imgui);
+            Engine engine = new Engine("SMA", 600, 480, logic, imgui);
             engine.run();
         } catch (Exception excp) {
             excp.printStackTrace();

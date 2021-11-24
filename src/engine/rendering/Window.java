@@ -4,6 +4,8 @@ import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import simulation.Constants;
+
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
@@ -22,13 +24,10 @@ public class Window {
 
     private boolean resized;
 
-    private boolean vSync;
-
-    public Window(String title, int width, int height, boolean vSync) {
+    public Window(String title, int width, int height) {
         this.title = title;
         this.width = width;
         this.height = height;
-        this.vSync = vSync;
         this.resized = false;
     }
 
@@ -84,7 +83,7 @@ public class Window {
         // Make the OpenGL context current
         glfwMakeContextCurrent(windowHandle);
 
-        if (isvSync()) {
+        if (Constants.VSYNC) {
             // Enable v-sync
             glfwSwapInterval(1);
         }
@@ -138,15 +137,12 @@ public class Window {
         this.resized = resized;
     }
 
-    public boolean isvSync() {
-        return vSync;
-    }
-
-    public void setvSync(boolean vSync) {
-        this.vSync = vSync;
+    public void updateVSync() {
+        glfwSwapInterval(Constants.VSYNC ? 1 : 0);
     }
 
     public void update() {
+        updateVSync();
         glfwSwapBuffers(windowHandle);
         glfwPollEvents();
     }

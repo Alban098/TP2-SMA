@@ -7,10 +7,12 @@ import engine.rendering.Mesh;
 import engine.utils.OBJLoader;
 import engine.rendering.Texture;
 import org.joml.Vector2i;
+import org.lwjgl.BufferUtils;
 import simulation.objects.Agent;
 import simulation.objects.Object;
 import simulation.objects.World;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -24,6 +26,8 @@ public class Simulation extends ConcreteLogic {
     private Mesh aMesh;
     private Mesh bMesh;
     private Mesh cMesh;
+
+    private ByteBuffer mapBuffer;
 
     @Override
     public void init(Window window) throws Exception {
@@ -46,6 +50,8 @@ public class Simulation extends ConcreteLogic {
         generateObjects(aMesh, Constants.A_COUNT, Object.Type.A);
         generateObjects(bMesh, Constants.B_COUNT, Object.Type.B);
         generateObjects(cMesh, Constants.C_COUNT, Object.Type.C);
+
+        mapBuffer = BufferUtils.createByteBuffer(Constants.WORLD_SIZE * Constants.WORLD_SIZE * 4);
     }
 
 
@@ -53,12 +59,15 @@ public class Simulation extends ConcreteLogic {
         Random rand = new Random();
         for (int i = 0; i < count; i++) {
             Agent a = new Agent(scene.getWorld(), mesh);
-            int x, z;
+            int x, z, attempts = 0;
             do {
+                attempts++;
+
                 x = rand.nextInt(scene.getWorld().getSizeX());
                 z = rand.nextInt(scene.getWorld().getSizeZ());
-            } while (!scene.getWorld().canMove(a, new Vector2i(x, z)));
-
+            } while (attempts <= 10 && !scene.getWorld().canMove(a, new Vector2i(x, z)));
+            if (attempts >= 10)
+                continue;
             a.setPosition(x+.5f, 1, z+.5f);
             agents.add(a);
             scene.getWorld().put(a, new Vector2i(x, z));
@@ -70,12 +79,14 @@ public class Simulation extends ConcreteLogic {
         Random rand = new Random();
         for (int i = 0; i < count; i++) {
             Object o = new Object(mesh, type);
-            int x, z;
+            int x, z, attempts = 0;
             do {
+                attempts++;
                 x = rand.nextInt(scene.getWorld().getSizeX());
                 z = rand.nextInt(scene.getWorld().getSizeZ());
-            } while (scene.getWorld().hasObject(new Vector2i(x, z)));
-
+            } while (attempts <= 10 && scene.getWorld().hasObject(new Vector2i(x, z)));
+            if (attempts >= 10)
+                continue;
             o.setPosition(x+.5f, 1, z+.5f);
             scene.getWorld().put(o, new Vector2i(x, z));
             scene.registerItem(o);
@@ -95,7 +106,8 @@ public class Simulation extends ConcreteLogic {
     @Override
     public void updateCamera(Window window, float percent, MouseInput mouseInput) {
         super.updateCamera(window, percent, mouseInput);
-        scene.getWorld().updateAnim(percent);
+        if (!paused)
+            scene.getWorld().updateAnim(percent);
         aMesh.getMaterial().setAmbientColour(Constants.A_COLOR);
         bMesh.getMaterial().setAmbientColour(Constants.B_COLOR);
         cMesh.getMaterial().setAmbientColour(Constants.C_COLOR);
@@ -116,5 +128,12 @@ public class Simulation extends ConcreteLogic {
         scene.reset();
         agents.clear();
         generateScene();
+
+    }
+
+    public ByteBuffer getMapBuffer() {
+        mapBuffer.clear();
+        scene.getWorld().fillBuffer(mapBuffer);
+        return mapBuffer;
     }
 }

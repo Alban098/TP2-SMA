@@ -1,7 +1,6 @@
 package simulation.settings;
 
 import engine.rendering.Engine;
-import engine.rendering.ILogic;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;
@@ -25,12 +24,18 @@ public class SettingsContainer {
         this.settings = new HashMap<>();
         this.file = file;
 
-        //System
         settings.put(SettingIdentifiers.MAX_MOVE_DIST, new Setting<>(SettingIdentifiers.MAX_MOVE_DIST, 1, (Setting<Integer> setting) -> {
             int[] tmp = {setting.getValue()};
-            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 10)) {
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 15)) {
                 setting.setValue(tmp[0]);
                 Constants.MAX_MOVE_DIST = setting.getValue();
+            }
+        }));
+        settings.put(SettingIdentifiers.FPS_TARGET, new Setting<>(SettingIdentifiers.FPS_TARGET, 60, (Setting<Integer> setting) -> {
+            int[] tmp = {setting.getValue()};
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 20, 240)) {
+                setting.setValue(tmp[0]);
+                Engine.TARGET_FPS = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.K_PLUS, new Setting<>(SettingIdentifiers.K_PLUS, 0.1f, (Setting<Float> setting) -> {
@@ -71,28 +76,28 @@ public class SettingsContainer {
         }));
         settings.put(SettingIdentifiers.A_COUNT, new Setting<>(SettingIdentifiers.A_COUNT, 200, (Setting<Integer> setting) -> {
             int[] tmp = {setting.getValue()};
-            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 0, 2000)) {
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 0, 5000)) {
                 setting.setValue(tmp[0]);
                 Constants.A_COUNT = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.B_COUNT, new Setting<>(SettingIdentifiers.B_COUNT, 200, (Setting<Integer> setting) -> {
             int[] tmp = {setting.getValue()};
-            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 0, 2000)) {
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 0, 5000)) {
                 setting.setValue(tmp[0]);
                 Constants.B_COUNT = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.C_COUNT, new Setting<>(SettingIdentifiers.C_COUNT, 0, (Setting<Integer> setting) -> {
             int[] tmp = {setting.getValue()};
-            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 0, 2000)) {
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 0, 5000)) {
                 setting.setValue(tmp[0]);
                 Constants.C_COUNT = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.AGENT_COUNT, new Setting<>(SettingIdentifiers.AGENT_COUNT, 20, (Setting<Integer> setting) -> {
             int[] tmp = {setting.getValue()};
-            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 200)) {
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 500)) {
                 setting.setValue(tmp[0]);
                 Constants.AGENT_COUNT = setting.getValue();
             }
@@ -106,7 +111,7 @@ public class SettingsContainer {
         }));
         settings.put(SettingIdentifiers.MARKER_RADIUS, new Setting<>(SettingIdentifiers.MARKER_RADIUS, 2, (Setting<Integer> setting) -> {
             int[] tmp = {setting.getValue()};
-            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 10)) {
+            if (ImGui.sliderInt(setting.getIdentifier().getDescription(), tmp, 1, 20)) {
                 setting.setValue(tmp[0]);
                 Constants.MARKER_RADIUS = setting.getValue();
             }
@@ -125,32 +130,32 @@ public class SettingsContainer {
                 Constants.ERROR_RATE = setting.getValue();
             }
         }));
-        settings.put(SettingIdentifiers.GIVE_UP_COOLDOWN, new Setting<>(SettingIdentifiers.GIVE_UP_COOLDOWN, 15f, (Setting<Float> setting) -> {
+        settings.put(SettingIdentifiers.GIVE_UP_COOLDOWN, new Setting<>(SettingIdentifiers.GIVE_UP_COOLDOWN, 3f, (Setting<Float> setting) -> {
             float[] tmp = {setting.getValue()};
-            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 1f, 50f)) {
+            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 1f, 10f)) {
                 setting.setValue(tmp[0]);
                 Constants.GIVE_UP_COOLDOWN = setting.getValue();
             }
         }));
-        settings.put(SettingIdentifiers.MARKER_COOLDOWN, new Setting<>(SettingIdentifiers.MARKER_COOLDOWN, 5f, (Setting<Float> setting) -> {
+        settings.put(SettingIdentifiers.MARKER_COOLDOWN, new Setting<>(SettingIdentifiers.MARKER_COOLDOWN, 2f, (Setting<Float> setting) -> {
             float[] tmp = {setting.getValue()};
-            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 1f, 25f)) {
+            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 1f, 5f)) {
                 setting.setValue(tmp[0]);
                 Constants.MARKER_COOLDOWN = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.MARKER_ATTENUATION, new Setting<>(SettingIdentifiers.MARKER_ATTENUATION, 0.99f, (Setting<Float> setting) -> {
             float[] tmp = {setting.getValue()};
-            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 0.5f, 0.99f)) {
+            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 0.5f, 0.9999f)) {
                 setting.setValue(tmp[0]);
                 Constants.MARKER_ATTENUATION = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.SPEED, new Setting<>(SettingIdentifiers.SPEED, 1f, (Setting<Float> setting) -> {
             float[] tmp = {setting.getValue()};
-            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 0.01f, 1f)) {
+            if (ImGui.sliderFloat(setting.getIdentifier().getDescription(), tmp, 0.1f, 10f)) {
                 setting.setValue(tmp[0]);
-                Engine.TARGET_UPS = Math.max((int) (Engine.TARGET_FPS * setting.getValue()), 1);
+                Engine.TARGET_UPS = setting.getValue();
             }
         }));
         settings.put(SettingIdentifiers.SHOW_MARKERS, new Setting<>(SettingIdentifiers.SHOW_MARKERS, true, (Setting<Boolean> setting) -> {
@@ -158,6 +163,13 @@ public class SettingsContainer {
             if (ImGui.checkbox(setting.getIdentifier().getDescription(), tmp)) {
                 setting.setValue(tmp.get());
                 Constants.SHOW_MARKERS = setting.getValue();
+            }
+        }));
+        settings.put(SettingIdentifiers.VSYNC, new Setting<>(SettingIdentifiers.VSYNC, true, (Setting<Boolean> setting) -> {
+            ImBoolean tmp = new ImBoolean(setting.getValue());
+            if (ImGui.checkbox(setting.getIdentifier().getDescription(), tmp)) {
+                setting.setValue(tmp.get());
+                Constants.VSYNC = setting.getValue();
             }
         }));
         loadFile();
@@ -208,7 +220,12 @@ public class SettingsContainer {
                 case MARKER_ATTENUATION -> Constants.MARKER_ATTENUATION = (float) setting.getValue();
                 case WORLD_SIZE -> Constants.WORLD_SIZE = (int) setting.getValue();
                 case SHOW_MARKERS -> Constants.SHOW_MARKERS = (boolean) setting.getValue();
-                case SPEED -> Engine.TARGET_UPS = Math.max((int) (Engine.TARGET_FPS * (float) setting.getValue()), 1);
+                case A_COLOR -> Constants.A_COLOR = (Vector4f) setting.getValue();
+                case B_COLOR -> Constants.B_COLOR = (Vector4f) setting.getValue();
+                case C_COLOR -> Constants.C_COLOR = (Vector4f) setting.getValue();
+                case SPEED -> Engine.TARGET_UPS = (float) setting.getValue();
+                case VSYNC -> Constants.VSYNC = (boolean) setting.getValue();
+                case FPS_TARGET -> Engine.TARGET_FPS = (int) setting.getValue();
             }
         }
     }

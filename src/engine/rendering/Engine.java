@@ -8,12 +8,13 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import org.lwjgl.glfw.GLFW;
+import simulation.Constants;
 import simulation.imgui.ImGuiLayer;
 
 public class Engine implements Runnable {
 
-    public static final int TARGET_FPS = 60;
-    public static int TARGET_UPS = 60;
+    public static int TARGET_FPS = 1200;
+    public static float TARGET_UPS = 1f;
 
     private final Window window;
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
@@ -27,12 +28,13 @@ public class Engine implements Runnable {
 
     private final MouseInput mouseInput;
 
-    public Engine(String windowTitle, int width, int height, boolean vSync, ILogic gameLogic, ImGuiLayer imGuiLayer) {
-        window = new Window(windowTitle, width, height, vSync);
+    public Engine(String windowTitle, int width, int height, ILogic gameLogic, ImGuiLayer imGuiLayer) {
+        window = new Window(windowTitle, width, height);
         mouseInput = new MouseInput();
         this.gameLogic = gameLogic;
         timer = new Timer();
         this.imGuiLayer = imGuiLayer;
+        imGuiLayer.linkEngine(this);
     }
 
     @Override
@@ -52,9 +54,14 @@ public class Engine implements Runnable {
         initImGui();
         imGuiGlfw.init(window.getWindowHandle(), true);
         imGuiGl3.init(null);
+        imGuiLayer.init();
         timer.init();
         mouseInput.init(window);
         gameLogic.init(window);
+    }
+
+    public void reinitImGuiTexture() {
+        imGuiLayer.init();
     }
 
     private void initImGui() {
@@ -66,9 +73,11 @@ public class Engine implements Runnable {
     protected void gameLoop() {
         float elapsedTime;
         float accumulator = 0f;
-
+        float interval;
+        int nbUpdate;
         while (!window.windowShouldClose()) {
-            float interval = 1f / TARGET_UPS;
+
+            interval = 1f / Math.max((int) (TARGET_FPS * TARGET_UPS), 1);
             elapsedTime = timer.getElapsedTime();
             accumulator += elapsedTime;
 
@@ -76,14 +85,16 @@ public class Engine implements Runnable {
             ImGui.newFrame();
 
             input();
+            nbUpdate = 0;
             while (accumulator >= interval) {
                 update(interval);
                 accumulator -= interval;
+                nbUpdate++;
             }
 
             render(Math.min(accumulator / interval, 1));
 
-            renderImGui();
+            renderImGui(elapsedTime, nbUpdate == 0 ? Math.max((int) (TARGET_FPS * TARGET_UPS), 1) : (int) (nbUpdate / elapsedTime));
             ImGui.render();
             imGuiGl3.renderDrawData(ImGui.getDrawData());
 
@@ -96,14 +107,14 @@ public class Engine implements Runnable {
 
             window.update();
 
-            if (!window.isvSync()) {
+            if (!Constants.VSYNC) {
                 sync();
             }
         }
     }
 
-    private void renderImGui() {
-        imGuiLayer.render();
+    private void renderImGui(float elapsedTime, int nbUpdate) {
+        imGuiLayer.render(elapsedTime, nbUpdate);
     }
 
     protected void cleanup() {
@@ -124,10 +135,8 @@ public class Engine implements Runnable {
     }
 
     protected void input() {
-        if (!imGuiLayer.hasLayerVisible()) {
-            mouseInput.input(window);
-            gameLogic.input(window, mouseInput);
-        }
+        mouseInput.input(window);
+        gameLogic.input(window, mouseInput);
     }
 
     protected void update(float interval) {

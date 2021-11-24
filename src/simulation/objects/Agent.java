@@ -3,7 +3,6 @@ package simulation.objects;
 import engine.objects.RenderableItem;
 import engine.rendering.Mesh;
 import simulation.Constants;
-import simulation.Simulation;
 
 import java.util.Map;
 import java.util.Random;
@@ -222,7 +221,7 @@ public class Agent extends RenderableItem {
 
         StringBuilder newMem = new StringBuilder(recognizedType != null ? p.getObject().getType().name() : "0");
         for (int i = 0; i < Constants.MEMORY_SIZE - 1; i++)
-            newMem.append(memory.charAt(i));
+            newMem.append(memory.length() > i ? memory.charAt(i) : '0');
         memory = newMem.toString();
     }
 
