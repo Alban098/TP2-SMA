@@ -2,11 +2,12 @@ package engine.rendering;
 
 import engine.objects.RenderableItem;
 import org.lwjgl.system.MemoryUtil;
-
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
@@ -33,12 +34,10 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 public class Mesh {
 
     private final int vaoId;
-
     private final List<Integer> vboIdList;
-
     private final int vertexCount;
-
     private Material material;
+    private final Map<Integer, Texture> extra_samplers;
 
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
         FloatBuffer posBuffer = null;
@@ -106,6 +105,7 @@ public class Mesh {
                 MemoryUtil.memFree(indicesBuffer);
             }
         }
+        extra_samplers = new HashMap<>();
     }
 
     public Material getMaterial() {
@@ -141,6 +141,10 @@ public class Mesh {
             // Bind the texture
             normal.bind();
         }
+        for (Map.Entry<Integer, Texture> entry : extra_samplers.entrySet()) {
+            glActiveTexture(entry.getKey());
+            entry.getValue().bind();
+        }
 
         // Draw the mesh
         glBindVertexArray(getVaoId());
@@ -149,15 +153,12 @@ public class Mesh {
     private void endRender() {
         // Restore state
         glBindVertexArray(0);
-
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     public void render() {
         initRender();
-
         glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
-
         endRender();
     }
 
@@ -193,5 +194,13 @@ public class Mesh {
         // Delete the VAO
         glBindVertexArray(0);
         glDeleteVertexArrays(vaoId);
+    }
+
+    public void addTexture(int textureUnit, Texture texture) {
+        extra_samplers.put(textureUnit, texture);
+    }
+
+    public void clearSamplers() {
+        extra_samplers.clear();
     }
 }

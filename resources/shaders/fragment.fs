@@ -37,7 +37,6 @@ struct Material
 uniform sampler2D texture_sampler;
 uniform sampler2D normal_sampler;
 uniform vec3 ambientLight;
-uniform vec4 addedColor;
 uniform float specularPower;
 uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
@@ -50,13 +49,13 @@ void setupColours(Material material, vec2 textCoord)
 {
     if (material.hasTexture == 1)
     {
-        ambientC = texture(texture_sampler, textCoord) + addedColor;
+        ambientC = texture(texture_sampler, textCoord);
         diffuseC = ambientC;
         speculrC = ambientC;
     }
     else
     {
-        ambientC = material.ambient + addedColor;
+        ambientC = material.ambient;
         diffuseC = material.diffuse;
         speculrC = material.specular;
     }

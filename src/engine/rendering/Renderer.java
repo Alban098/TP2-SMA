@@ -7,6 +7,7 @@ import engine.objects.*;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import settings.SettingsInterface;
 
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,6 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
 
-    /**
-     * Field of View in Radians
-     */
-    private static final float FOV = (float) Math.toRadians(60.0f);
     private static final int MAX_POINT_LIGHTS = 5;
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.f;
@@ -27,6 +24,7 @@ public class Renderer {
 
     private ShaderProgram shaderProgram;
     private ShaderProgram skyBoxShaderProgram;
+    private ShaderProgram worldShaderProgram;
 
     private final float specularPower;
 
@@ -42,19 +40,30 @@ public class Renderer {
         shaderProgram.createFragmentShader(Utils.loadResource("/shaders/fragment.fs"));
         shaderProgram.link();
 
-        // Create uniforms for modelView and projection matrices and texture
         shaderProgram.createUniform("projectionMatrix");
         shaderProgram.createUniform("modelViewMatrix");
         shaderProgram.createUniform("texture_sampler");
         shaderProgram.createUniform("normal_sampler");
-        // Create uniform for material
         shaderProgram.createMaterialUniform("material");
-        // Create lighting related uniforms
         shaderProgram.createUniform("specularPower");
         shaderProgram.createUniform("ambientLight");
         shaderProgram.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
 
-        shaderProgram.createUniform("addedColor");
+        worldShaderProgram = new ShaderProgram();
+        worldShaderProgram.createVertexShader(Utils.loadResource("/shaders/world_vertex.vs"));
+        worldShaderProgram.createFragmentShader(Utils.loadResource("/shaders/world_fragment.fs"));
+        worldShaderProgram.link();
+
+        worldShaderProgram.createUniform("projectionMatrix");
+        worldShaderProgram.createUniform("modelViewMatrix");
+        worldShaderProgram.createUniform("texture_sampler");
+        worldShaderProgram.createUniform("normal_sampler");
+        worldShaderProgram.createUniform("help_marker_sampler");
+        worldShaderProgram.createMaterialUniform("material");
+        worldShaderProgram.createUniform("specularPower");
+        worldShaderProgram.createUniform("scale");
+        worldShaderProgram.createUniform("ambientLight");
+        worldShaderProgram.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
 
         skyBoxShaderProgram = new ShaderProgram();
         skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/sb_vertex.vs"));
@@ -78,16 +87,42 @@ public class Renderer {
             glViewport(0, 0, window.getWidth(), window.getHeight());
             window.setResized(false);
         }
-        transformation.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        transformation.updateProjectionMatrix(SettingsInterface.FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         transformation.updateViewMatrix(camera);
 
         renderScene(window, camera, scene);
+        renderWorld(window, camera, scene);
         renderSkyBox(window, camera, scene);
     }
 
-    private void renderLights(Matrix4f viewMatrix, SceneLight sceneLight) {
-        shaderProgram.setUniform("ambientLight", sceneLight.getAmbientLight());
-        shaderProgram.setUniform("specularPower", specularPower);
+    private void renderWorld(Window window, Camera camera, Scene scene) {
+        worldShaderProgram.bind();
+
+        Matrix4f projectionMatrix = transformation.getProjectionMatrix();
+
+        Matrix4f viewMatrix = transformation.getViewMatrix();
+        Matrix4f modelViewMatrix = transformation.buildModelViewMatrix(scene.getWorld(), viewMatrix);
+
+        worldShaderProgram.setUniform("projectionMatrix", projectionMatrix);
+        worldShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
+
+        SceneLight sceneLight = scene.getSceneLight();
+        renderLights(viewMatrix, sceneLight, worldShaderProgram);
+
+        worldShaderProgram.setUniform("texture_sampler", 0);
+        worldShaderProgram.setUniform("normal_sampler", 1);
+        worldShaderProgram.setUniform("help_marker_sampler", 2);
+        worldShaderProgram.setUniform("scale", scene.getWorld().getScale());
+        // Render each mesh with the associated game Items
+        worldShaderProgram.setUniform("material", scene.getWorld().getMesh().getMaterial());
+        scene.getWorld().getMesh().render();
+
+        worldShaderProgram.unbind();
+    }
+
+    private void renderLights(Matrix4f viewMatrix, SceneLight sceneLight, ShaderProgram shader) {
+        shader.setUniform("ambientLight", sceneLight.getAmbientLight());
+        shader.setUniform("specularPower", specularPower);
 
         // Process Point Lights
         PointLight[] pointLightList = sceneLight.getPointLightList();
@@ -101,7 +136,7 @@ public class Renderer {
             lightPos.x = aux.x;
             lightPos.y = aux.y;
             lightPos.z = aux.z;
-            shaderProgram.setUniform("pointLights", currPointLight, i);
+            shader.setUniform("pointLights", currPointLight, i);
         }
     }
 
@@ -114,7 +149,7 @@ public class Renderer {
         Matrix4f viewMatrix = transformation.getViewMatrix();
 
         SceneLight sceneLight = scene.getSceneLight();
-        renderLights(viewMatrix, sceneLight);
+        renderLights(viewMatrix, sceneLight, shaderProgram);
 
         shaderProgram.setUniform("texture_sampler", 0);
         shaderProgram.setUniform("normal_sampler", 1);
@@ -125,11 +160,9 @@ public class Renderer {
             mesh.renderList(mapMeshes.get(mesh), (RenderableItem gameItem) -> {
                         Matrix4f modelViewMatrix = transformation.buildModelViewMatrix(gameItem, viewMatrix);
                         shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
-                        shaderProgram.setUniform("addedColor", gameItem.getAddedColor());
                     }
             );
         }
-
         shaderProgram.unbind();
     }
 
@@ -139,7 +172,7 @@ public class Renderer {
         skyBoxShaderProgram.setUniform("texture_sampler", 0);
 
         // Update projection Matrix
-        Matrix4f projectionMatrix = transformation.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        Matrix4f projectionMatrix = transformation.updateProjectionMatrix(SettingsInterface.FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         skyBoxShaderProgram.setUniform("projectionMatrix", projectionMatrix);
         SkyBox skyBox = scene.getSkyBox();
         Matrix4f viewMatrix = transformation.updateViewMatrix(camera);

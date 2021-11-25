@@ -2,8 +2,8 @@ package engine.rendering;
 
 import engine.utils.MouseInput;
 import engine.utils.Timer;
-import simulation.Constants;
-import simulation.imgui.ImGuiLayer;
+import settings.SettingsInterface;
+import imgui.ImGuiLayer;
 
 public class Engine implements Runnable {
 
@@ -50,7 +50,7 @@ public class Engine implements Runnable {
         float interval;
         int nbUpdate;
         while (!window.windowShouldClose()) {
-            interval = 1f / Constants.TARGET_UPS;
+            interval = 1f / SettingsInterface.TARGET_UPS;
             elapsedTime = timer.getElapsedTime();
             accumulator += elapsedTime;
 
@@ -64,12 +64,13 @@ public class Engine implements Runnable {
                 nbUpdate++;
             }
 
-            render(Math.min(accumulator / interval, 1));
+            gameLogic.setPercent(Math.min(accumulator / interval, 1));
+            render();
 
             window.updateImGui(elapsedTime, nbUpdate);
             window.update();
 
-            if (!Constants.VSYNC) {
+            if (!SettingsInterface.VSYNC) {
                 sync();
             }
         }
@@ -81,7 +82,7 @@ public class Engine implements Runnable {
     }
     
     private void sync() {
-        float loopSlot = 1f / Constants.TARGET_FPS;
+        float loopSlot = 1f / SettingsInterface.TARGET_FPS;
         double endTime = timer.getLastLoopTime() + loopSlot;
         while (timer.getTime() < endTime) {
             try {
@@ -96,11 +97,11 @@ public class Engine implements Runnable {
     }
 
     protected void update(float interval) {
-        gameLogic.update(window, interval, mouseInput);
+        gameLogic.update(window, interval);
     }
 
-    protected void render(float updatePercent) {
-        gameLogic.updateCamera(window, updatePercent, mouseInput);
+    protected void render() {
+        gameLogic.updateCamera(window, mouseInput);
         gameLogic.render(window);
     }
 

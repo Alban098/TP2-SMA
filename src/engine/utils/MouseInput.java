@@ -5,26 +5,32 @@ import org.joml.Vector2d;
 import org.joml.Vector2f;
 import static org.lwjgl.glfw.GLFW.*;
 
+/**
+ * This class represent a state of the mouse
+ */
 public class MouseInput {
 
     private final Vector2d previousPos;
-
     private final Vector2d currentPos;
-
     private final Vector2f displVec;
 
     private boolean inWindow = false;
-
     private boolean leftButtonPressed = false;
-
     private boolean rightButtonPressed = false;
 
+    /**
+     * Create a new MouseInput
+     */
     public MouseInput() {
         previousPos = new Vector2d(-1, -1);
         currentPos = new Vector2d(0, 0);
         displVec = new Vector2f();
     }
 
+    /**
+     * Initialize the MouseInput
+     * @param window the window used to capture inputs from
+     */
     public void init(Window window) {
         glfwSetCursorPosCallback(window.getWindowHandle(), (windowHandle, xpos, ypos) -> {
             currentPos.x = xpos;
@@ -39,10 +45,18 @@ public class MouseInput {
         });
     }
 
+    /**
+     * get the displacement Vector of the mouse cursor
+     * @return the displacement vector of the mouse
+     */
     public Vector2f getDisplVec() {
         return displVec;
     }
 
+    /**
+     * Compute the current state of the mouse
+     * @param window the Window to capture inputs from
+     */
     public void input(Window window) {
         displVec.x = 0;
         displVec.y = 0;
@@ -62,16 +76,19 @@ public class MouseInput {
         previousPos.y = currentPos.y;
     }
 
+    /**
+     * Is left click held
+     * @return is left click help
+     */
     public boolean isLeftButtonPressed() {
         return leftButtonPressed;
     }
 
+    /**
+     * Is right click held
+     * @return is right click help
+     */
     public boolean isRightButtonPressed() {
         return rightButtonPressed;
-    }
-
-    public void pause() {
-        leftButtonPressed = false;
-        rightButtonPressed = false;
     }
 }

@@ -8,9 +8,9 @@ public interface ILogic {
     
     void input(Window window, MouseInput mouseInput);
 
-    void update(Window window, float interval, MouseInput mouseInput);
+    void update(Window window, float interval);
 
-    void updateCamera(Window window, float percent, MouseInput mouseInput);
+    void updateCamera(Window window, MouseInput mouseInput);
     
     void render(Window window);
     
@@ -21,4 +21,6 @@ public interface ILogic {
     void resume();
 
     void reset();
+
+    void setPercent(float percent);
 }

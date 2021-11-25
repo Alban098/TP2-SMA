@@ -7,10 +7,18 @@ import engine.rendering.Mesh;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+/**
+ * This class is used to load meshes data to Meshes Objects
+ */
 public class OBJLoader {
 
-    public static Mesh loadMesh(String fileName) throws Exception {
-        List<String> lines = Utils.readAllLines(fileName);
+    /**
+     * Load a 3D mesh, needs to be .obj
+     * @param fileName the .obj path
+     * @return the decoded Mesh
+     * @throws Exception thrown if the fil couldn't be loaded or opened
+     */
+    public static Mesh loadMesh(String fileName) throws Exception {List<String> lines = Utils.readAllLines(fileName);
         
         List<Vector3f> vertices = new ArrayList<>();
         List<Vector2f> textures = new ArrayList<>();
@@ -55,8 +63,15 @@ public class OBJLoader {
         return reorderLists(vertices, textures, normals, faces);
     }
 
-    private static Mesh reorderLists(List<Vector3f> posList, List<Vector2f> textCoordList,
-            List<Vector3f> normList, List<Face> facesList) {
+    /**
+     * Create the Mesh from the extracted lists of vertices, normals, texture coords and faces
+     * @param posList the list of vertices
+     * @param textCoordList the list of texture coords
+     * @param normList the list of normals
+     * @param facesList the list of face indices
+     * @return a decoded Mesh usable by the Engine
+     */
+    private static Mesh reorderLists(List<Vector3f> posList, List<Vector2f> textCoordList, List<Vector3f> normList, List<Face> facesList) {
 
         List<Integer> indices = new ArrayList<>();
         // Create position array in the order it has been declared
@@ -74,19 +89,25 @@ public class OBJLoader {
         for (Face face : facesList) {
             IdxGroup[] faceVertexIndices = face.getFaceVertexIndices();
             for (IdxGroup indValue : faceVertexIndices) {
-                processFaceVertex(indValue, textCoordList, normList,
-                        indices, textCoordArr, normArr);
+                processFaceVertex(indValue, textCoordList, normList, indices, textCoordArr, normArr);
             }
         }
-        int[] indicesArr = new int[indices.size()];
+        int[] indicesArr;
         indicesArr = indices.stream().mapToInt((Integer v) -> v).toArray();
         Mesh mesh = new Mesh(posArr, textCoordArr, normArr, indicesArr);
         return mesh;
     }
 
-    private static void processFaceVertex(IdxGroup indices, List<Vector2f> textCoordList,
-            List<Vector3f> normList, List<Integer> indicesList,
-            float[] texCoordArr, float[] normArr) {
+    /**
+     * Populate the face arrays, according to the extracted list
+     * @param indices the indices of each type of data for the face (vertices, texture coords, normals)
+     * @param textCoordList the list of texture coords
+     * @param normList the list of normals
+     * @param indicesList the list of face indices
+     * @param texCoordArr the texture coords array to fill
+     * @param normArr the normals array to fill
+     */
+    private static void processFaceVertex(IdxGroup indices, List<Vector2f> textCoordList, List<Vector3f> normList, List<Integer> indicesList, float[] texCoordArr, float[] normArr) {
 
         // Set index for vertex coordinates
         int posIndex = indices.idxPos;
@@ -107,13 +128,22 @@ public class OBJLoader {
         }
     }
 
+    /**
+     * This class represent a face read from the .obj file
+     */
     protected static class Face {
 
         /**
          * List of idxGroup groups for a face triangle (3 vertices per face).
          */
-        private IdxGroup[] idxGroups = new IdxGroup[3];
+        private IdxGroup[] idxGroups;
 
+        /**
+         * Create a new Face
+         * @param v1 vertices indices
+         * @param v2 texture coords indices
+         * @param v3 normals indices
+         */
         public Face(String v1, String v2, String v3) {
             idxGroups = new IdxGroup[3];
             // Parse the lines
@@ -122,6 +152,11 @@ public class OBJLoader {
             idxGroups[2] = parseLine(v3);
         }
 
+        /**
+         * Create an IdxGroup from the String representation extractec from the .obj file
+         * @param line the file to parse
+         * @return an IdxGroup representing the face
+         */
         private IdxGroup parseLine(String line) {
             IdxGroup idxGroup = new IdxGroup();
 
@@ -140,11 +175,18 @@ public class OBJLoader {
             return idxGroup;
         }
 
+        /**
+         * Return the idxGroups of the face
+         * @return an array of IdxGroups [vertices, texture coords, normals]
+         */
         public IdxGroup[] getFaceVertexIndices() {
             return idxGroups;
         }
     }
 
+    /**
+     * This class represent a group of IDs used to compute a face from the .obj file
+     */
     protected static class IdxGroup {
 
         public static final int NO_VALUE = -1;
@@ -155,6 +197,9 @@ public class OBJLoader {
 
         public int idxVecNormal;
 
+        /**
+         * Initialize a new IdxGroup
+         */
         public IdxGroup() {
             idxPos = NO_VALUE;
             idxTextCoord = NO_VALUE;

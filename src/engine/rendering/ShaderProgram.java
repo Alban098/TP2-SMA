@@ -13,11 +13,8 @@ import org.lwjgl.system.MemoryStack;
 public class ShaderProgram {
 
     private final int programId;
-
     private int vertexShaderId;
-
     private int fragmentShaderId;
-
     private final Map<String, Integer> uniforms;
 
     public ShaderProgram() throws Exception {
@@ -94,9 +91,9 @@ public class ShaderProgram {
         setUniform(uniformName + ".position", pointLight.getPosition());
         setUniform(uniformName + ".intensity", pointLight.getIntensity());
         PointLight.Attenuation att = pointLight.getAttenuation();
-        setUniform(uniformName + ".att.constant", att.getConstant());
-        setUniform(uniformName + ".att.linear", att.getLinear());
-        setUniform(uniformName + ".att.exponent", att.getExponent());
+        setUniform(uniformName + ".att.constant", att.constant());
+        setUniform(uniformName + ".att.linear", att.linear());
+        setUniform(uniformName + ".att.exponent", att.exponent());
     }
 
 

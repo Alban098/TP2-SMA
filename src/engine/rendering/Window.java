@@ -7,17 +7,14 @@ import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import simulation.Constants;
-import simulation.imgui.ImGuiLayer;
+import settings.SettingsInterface;
+import imgui.ImGuiLayer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
-import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
-import static org.lwjgl.opengl.GL14.glBlendEquation;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
@@ -93,7 +90,7 @@ public class Window {
         // Make the OpenGL context current
         glfwMakeContextCurrent(windowHandle);
 
-        if (Constants.VSYNC) {
+        if (SettingsInterface.VSYNC) {
             // Enable v-sync
             glfwSwapInterval(1);
         }
@@ -148,7 +145,7 @@ public class Window {
     }
 
     public void updateVSync() {
-        glfwSwapInterval(Constants.VSYNC ? 1 : 0);
+        glfwSwapInterval(SettingsInterface.VSYNC ? 1 : 0);
     }
 
     public void update() {
@@ -163,7 +160,7 @@ public class Window {
     }
 
     public void updateImGui(float elapsedTime, int nbUpdate) {
-        imGuiLayer.render(elapsedTime, nbUpdate == 0 ? Constants.TARGET_UPS : (int) (nbUpdate / elapsedTime));
+        imGuiLayer.render(elapsedTime, nbUpdate == 0 ? SettingsInterface.TARGET_UPS : (int) (nbUpdate / elapsedTime));
         ImGui.render();
         imGuiGl3.renderDrawData(ImGui.getDrawData());
 

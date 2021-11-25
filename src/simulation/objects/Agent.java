@@ -2,11 +2,14 @@ package simulation.objects;
 
 import engine.objects.RenderableItem;
 import engine.rendering.Mesh;
-import simulation.Constants;
+import settings.SettingsInterface;
 
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Thisb class represent an Agent that can interact with the World
+ */
 public class Agent extends RenderableItem {
 
     private static final Random rand = new Random();
@@ -22,24 +25,37 @@ public class Agent extends RenderableItem {
     private Agent slave;
     private Agent master;
 
+    /**
+     * Create a new Agent
+     * @param world the World where the Agent lives in
+     * @param mesh the Mesh used by the Agent
+     */
     public Agent(World world, Mesh mesh) {
         super(mesh);
         this.world = world;
         this.memory = "";
-        for (int i = 0; i < Constants.MEMORY_SIZE; i++)
+        for (int i = 0; i < SettingsInterface.MEMORY_SIZE; i++)
             this.memory += "0";
     }
 
+    /**
+     * Update the Agent
+     * @param elapsedTime time elapsed since last update
+     */
     public void update(float elapsedTime) {
-        if (!isHelping()) {
+        //If the Agent isn't a slave to another one
+        if (isNotBusy()) {
+            //Percepts, Act and Update the memory
             Perception perception = percepts();
             action(perception);
             updateMemory(perception);
 
+            //If the Agent carries an Object of type C and doesn't has help, update timers
             if (!hasHelp()) {
                 markerCooldown -= elapsedTime;
                 giveUpCooldown -= elapsedTime;
             }
+        //If the Agent is helping another one, 5% chance to stop doing it
         } else {
             if (rand.nextFloat() < 0.05 && master != null) {
                 master.slave = null;
@@ -48,54 +64,92 @@ public class Agent extends RenderableItem {
         }
     }
 
+    /**
+     * Return whether the Agent is helped by another or not
+     * @return is the Agent currently helped by another
+     */
     public boolean hasHelp() {
         return slave != null;
     }
 
+    /**
+     * Return whether the Agent is asking for help or not
+     * @return is the Agent asking for help
+     */
     public boolean isAskingForHelp() {
-        return carriedObject!= null && carriedObject.getType() == Object.Type.C && giveUpCooldown > 0 && !hasHelp() && !isHelping();
+        return carriedObject!= null && carriedObject.getType() == Object.Type.C && giveUpCooldown > 0 && !hasHelp() && isNotBusy();
     }
 
-    public boolean isHelping() {
-        return master != null;
+    /**
+     * Return whether the Agent is helping another one or not
+     * @return is the Agent not helping any other one
+     */
+    public boolean isNotBusy() {
+        return master == null;
     }
 
+    /**
+     * Create a Perception of the local surrounding from the World
+     * @return the local Perception of the Agent
+     */
     public Perception percepts() {
         return world.getPerception(this);
     }
 
+    /**
+     * The common behaviour of the Agent
+     * @param p the local Perception of the Agent
+     */
     public void action(Perception p) {
-        if (p.getObject() != null) { //If there is an object on the ground
-            if (carriedObject == null) { //If the agent isn't carrying anything, try picking it up
+        //If there is an object on the ground
+        if (p.object() != null) {
+            //If the agent isn't carrying anything, try picking it up
+            if (carriedObject == null) {
+                //If the agent can't pick up the Object or doesn't want to, just move
                 if (!pickUp(p))
                     move(p);
             } else {
+                //Else if the agent carries an Object of type C
                 if (carriedObject.getType() == Object.Type.C)
                     handleTypeC(p);
+                //Otherwise, juste move
                 else
                     move(p);
             }
-        } else { //Otherwise
-            if (carriedObject != null) { //If the agent is carrying an object
-                if (!putDown(p, false))
+        } else {
+            //If the agent is carrying an object
+            if (carriedObject != null) {
+                //If the agent can't or doesn't want to put down the item
+                if (!putDown(false))
+                    //If the Agent carries an Object of type C
                     if (carriedObject.getType() == Object.Type.C)
                         handleTypeC(p);
+                    //Otherwise, just move
                     else
                         move(p);
+            //If the agent can't pick up the Object or doesn't want to, just move
             } else {
                 move(p);
             }
         }
     }
 
+    /**
+     * Handle the case when the Agent carries an Object of type C
+     * @param p the local Perception of the Agent
+     */
     private void handleTypeC(Perception p) {
+        //Is the Agent helped by another one
         if (hasHelp()) {
+            //If so, move the Agent and it's slave
             Direction dir;
             int dist;
             int attempts = 0;
             do {
+                //Try to find a Direction where the 2 agent can move
                 dir = Direction.random(rand);
-                dist = rand.nextInt(Constants.MAX_MOVE_DIST) + 1;
+                dist = rand.nextInt(SettingsInterface.MAX_MOVE_DIST) + 1;
+                //Give up after 3 unsuccessfully attempts
                 if (++attempts > 3) {
                     dir = Direction.NONE;
                     dist = 0;
@@ -103,15 +157,21 @@ public class Agent extends RenderableItem {
                 }
             } while(!world.canMove(this, dir, dist) || !world.canMove(slave, dir, dist));
 
+            //Move the Agent, and it's slave to the selected direction
             world.move(this, dir, dist);
             world.move(slave, dir, dist);
+        //Otherwise, try asking for help or just give up
         } else {
+            //If it's time to ask for help
             if (markerCooldown <= 0) {
+                //Put marker on the world and update timer
                 world.putMarker(this);
-                markerCooldown = Constants.MARKER_COOLDOWN;
+                markerCooldown = SettingsInterface.MARKER_COOLDOWN;
             }
+            //If it's time to give up
             if (giveUpCooldown <= 0) {
-                if (putDown(p, true)) {
+                //Put down the item and move
+                if (putDown(true)) {
                     releaseSlave();
                     markerCooldown = 0;
                     giveUpCooldown = 0;
@@ -121,20 +181,28 @@ public class Agent extends RenderableItem {
         }
     }
 
+    /**
+     * Release an enslaved Agent
+     */
     private void releaseSlave() {
         if (slave != null) {
             slave.master = null;
-            world.move(slave, Direction.NONE, 0);
             slave = null;
         }
     }
 
-    private boolean putDown(Perception p, boolean force) {
-        float freq = getFreq(carriedObject);
-        float prob = freq / (Constants.K_MINUS + freq);
+    /**
+     * Make the Agent put down its Object according to the calculated probability
+     * @param force force probability to 1
+     * @return has the Agent put down its Object
+     */
+    private boolean putDown(boolean force) {
+        float freq = getFrequency(carriedObject);
+        float prob = freq / (SettingsInterface.K_MINUS + freq);
         prob *= prob;
         if (rand.nextFloat() < prob || force) { //If putting it down
             if (world.putDown(this, carriedObject)) {
+                //If the Agent puts down an Object of type C, release the slave
                 if (carriedObject.getType() == Object.Type.C)
                     releaseSlave();
                 carriedObject = null;
@@ -145,35 +213,49 @@ public class Agent extends RenderableItem {
         return false;
     }
 
+    /**
+     * Make the Agent pick an Object on the ground according to the calculated probability
+     * @param p the local Perception of the Agent
+     * @return has the Agent picked up the Object
+     */
     private boolean pickUp(Perception p) {
-        float freq = getFreq(p.getObject());
-        float prob = Constants.K_PLUS / (Constants.K_PLUS + freq);
+        float freq = getFrequency(p.object());
+        float prob = SettingsInterface.K_PLUS / (SettingsInterface.K_PLUS + freq);
         prob *= prob;
         if (rand.nextFloat() < prob) { //If picking it up
             carriedObject = world.pickUp(this);
             world.move(this, Direction.NONE, 0); // Just an anim hack
             if (carriedObject.getType() == Object.Type.C) {
-                markerCooldown = Constants.MARKER_COOLDOWN;
+                markerCooldown = SettingsInterface.MARKER_COOLDOWN;
                 world.putMarker(this);
-                giveUpCooldown = Constants.GIVE_UP_COOLDOWN;
+                giveUpCooldown = SettingsInterface.GIVE_UP_COOLDOWN;
             }
             return true;
         }
         return false;
     }
 
+    /**
+     * Move an agent to a random Direction for a random distance
+     * @param p the local Perception of the Agent
+     */
     private void move(Perception p) {
-        if (lookForAgentAskingHelp(p))
+        //Look for an Agent asking for help in the direct neighbourhood of the Agent (radius 1), if so help him and return
+        if (lookForAgentAskingHelp())
             return;
-        if (p.getHelpMarker() > 0 && tryMoveToMarker())
+        //If there is marker on the ground, move to the adjacent Chunk with the most marker, then return
+        if (p.helpMarker() > 0 && tryMoveToMarker() && carriedObject == null)
             return;
+
+        //Otherwise, juste generate a Direction and distance and move according to that
         Direction dir;
         int dist;
         int attempts = 0;
         do {
             dir = Direction.random(rand);
-            dist = rand.nextInt(Constants.MAX_MOVE_DIST) + 1;
-            if (++attempts > 3) {
+            dist = rand.nextInt(SettingsInterface.MAX_MOVE_DIST) + 1;
+            //Stop if no suitable Direction and distance found after 3 attempts
+            if (++attempts > 5) {
                 dir = Direction.NONE;
                 dist = 0;
                 break;
@@ -183,8 +265,15 @@ public class Agent extends RenderableItem {
         world.move(this, dir, dist);
     }
 
+    /**
+     * Move the Agent to the adjacent Chunk with the most marker
+     * @return has the Agent succeeded in its movement
+     */
     private boolean tryMoveToMarker() {
+        //Get the ordered list of Direction, ordered by marker value, most first
         Map<Float, Direction> markers = world.getMarkers(this);
+
+        //For each Direction, try to move, return if success, go to next if not
         for (Map.Entry<Float, Direction> entry : markers.entrySet()) {
             if (world.canMove(this, entry.getValue(), 1)) {
                 world.move(this, entry.getValue(), 1);
@@ -194,7 +283,12 @@ public class Agent extends RenderableItem {
         return false;
     }
 
-    private boolean lookForAgentAskingHelp(Perception p) {
+    /**
+     * Return whether an Agent is asking for help in the immediate surrounding of the Agent
+     * if found, the Agent will help it
+     * @return has the Agent enslaved himself
+     */
+    private boolean lookForAgentAskingHelp() {
         Agent asking = world.lookForAgentInNeed(this);
         if (asking != null && master == null && slave == null && carriedObject == null) {
             asking.slave = this;
@@ -204,29 +298,49 @@ public class Agent extends RenderableItem {
         return false;
     }
 
-    private float getFreq(Object object) {
+    /**
+     * Get the frequency of an Object in the Agent's memory
+     * @param object the Object to calculate the frequency of
+     * @return the calculated frequency
+     */
+    private float getFrequency(Object object) {
         float count = 0;
         if (object != null)
             for (char c : memory.toCharArray())
                 if (c != '0' && Object.Type.valueOf(String.valueOf(c)) == object.getType())
                     count++;
-        return count / Constants.MEMORY_SIZE;
+        return count / SettingsInterface.MEMORY_SIZE;
     }
 
+    /**
+     * Update the memory of the Agent
+     * @param p the local perception of the Agent
+     */
     private void updateMemory(Perception p) {
         //Error checking
-        Object.Type recognizedType = p.getObject() != null ? p.getObject().getType() : null;
-        if (recognizedType != null && new Random().nextFloat() < Constants.ERROR_RATE)
+        Object.Type recognizedType = p.object() != null ? p.object().getType() : null;
+        if (recognizedType != null && new Random().nextFloat() < SettingsInterface.ERROR_RATE)
             recognizedType = Object.Type.change(recognizedType);
 
-        StringBuilder newMem = new StringBuilder(recognizedType != null ? p.getObject().getType().name() : "0");
-        for (int i = 0; i < Constants.MEMORY_SIZE - 1; i++)
+        StringBuilder newMem = new StringBuilder(recognizedType != null ? p.object().getType().name() : "0");
+        for (int i = 0; i < SettingsInterface.MEMORY_SIZE - 1; i++)
             newMem.append(memory.length() > i ? memory.charAt(i) : '0');
         memory = newMem.toString();
     }
 
+    /**
+     * Make the carried item follow the Agent (just for rendering purposes)
+     */
     public void anim() {
         if (carriedObject != null)
-            carriedObject.update(this);
+            carriedObject.follow(this);
+    }
+
+    /**
+     * Return the Object currently carried by the Agent
+     * @return the carried Object, null is absent
+     */
+    public Object getCarriedObject() {
+        return carriedObject;
     }
 }
