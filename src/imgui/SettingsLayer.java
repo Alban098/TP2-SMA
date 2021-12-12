@@ -102,6 +102,7 @@ public class SettingsLayer extends Layer {
                     if (ImGui.treeNode("Parameters (Part 2)")) {
                         settingsContainer.getSetting(SettingIdentifiers.MARKER_RADIUS).process();
                         settingsContainer.getSetting(SettingIdentifiers.MARKER_ATTENUATION).process();
+                        settingsContainer.getSetting(SettingIdentifiers.ENABLE_MARKER).process();
                         settingsContainer.getSetting(SettingIdentifiers.MARKER_COOLDOWN).process();
                         settingsContainer.getSetting(SettingIdentifiers.GIVE_UP_COOLDOWN).process();
                         ImGui.treePop();
@@ -135,6 +136,7 @@ public class SettingsLayer extends Layer {
                         settingsContainer.getSetting(SettingIdentifiers.SPEED).process();
                         settingsContainer.getSetting(SettingIdentifiers.FPS_TARGET).process();
                         settingsContainer.getSetting(SettingIdentifiers.VSYNC).process();
+                        settingsContainer.getSetting(SettingIdentifiers.ANIMATION).process();
                         ImGui.treePop();
                     }
                     ImGui.endTabItem();

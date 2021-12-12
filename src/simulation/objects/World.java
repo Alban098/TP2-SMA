@@ -33,10 +33,8 @@ public class World extends RenderableWorld {
     public void move(Agent agent, Direction dir, int distance) {
         int x = (positions.get(agent).getX() + dir.getDisplacement(distance).x);
         int z = (positions.get(agent).getZ() + dir.getDisplacement(distance).y);
-        Chunk lastChunk = positions.get(agent);
         put(agent, new Vector2i(x, z));
-
-        updateVisual(agent, lastChunk);
+        updateVisual(agent);
     }
 
     /**
@@ -90,7 +88,7 @@ public class World extends RenderableWorld {
      */
     public boolean canMove(Agent agent, Vector2i pos) {
         Chunk chunk = getChunk(pos.x, pos.y);
-        return chunk != null && chunk.getAgent() == null && agent != chunk.getAgent();
+        return chunk != null && (chunk.getAgent() == null || agent == chunk.getAgent());
     }
 
     /**
@@ -149,6 +147,10 @@ public class World extends RenderableWorld {
      */
     public void update() {
         for (Chunk c : chunks) {
+            if (c.getAgent() != null) {
+                lastPosition.put(c.getAgent(), positions.get(c.getAgent()));
+                lastRotation.put(c.getAgent(), rotations.get(c.getAgent()));
+            }
             c.setMarker(c.getMarker() * SettingsInterface.MARKER_ATTENUATION);
             if (c.getMarker() < .05)
                 c.setMarker(0);
@@ -167,11 +169,30 @@ public class World extends RenderableWorld {
                 float dist = i*i + j*j;
                 dist = (float) Math.sqrt(dist) + 1;
                 if (chunk != null) {
-                    chunk.setMarker(1f / dist);
+                    chunk.setMarker(Math.max(1f / dist, chunk.getMarker()));
                 }
             }
         }
     }
+
+    /**
+     * Spawn a help marker to the world and spreads it out
+     * @param source the Agent putting down the marker
+     */
+    public void removeMarker(Agent source) {
+        Chunk sourceChunk = positions.get(source);
+        for (int i = -SettingsInterface.MARKER_RADIUS; i <= SettingsInterface.MARKER_RADIUS; i++) {
+            for (int j = -SettingsInterface.MARKER_RADIUS; j <= SettingsInterface.MARKER_RADIUS; j++) {
+                Chunk chunk = getChunk(sourceChunk.getX() + i, sourceChunk.getZ() + j);
+                float dist = i*i + j*j;
+                dist = (float) Math.sqrt(dist) + 1;
+                if (chunk != null) {
+                    chunk.setMarker(Math.max(chunk.getMarker() - 1f / dist, 0));
+                }
+            }
+        }
+    }
+
 
     /**
      * Get an Agent asking for help in the immediate neighborhood of the source Agent
@@ -201,14 +222,16 @@ public class World extends RenderableWorld {
      */
     public Map<Float, Direction> getMarkers(Agent source) {
         Map<Float, Direction> markers = new TreeMap<>(Comparator.reverseOrder());
-        Chunk sourceChunk = positions.get(source);
-        for (Direction dir : Direction.values()) {
-            if (dir == Direction.NONE)
-                continue;
-            Vector2i displacement = dir.getDisplacement(1);
-            Chunk chunk = getChunk(sourceChunk.getX() + displacement.x, sourceChunk.getZ() + displacement.y);
-            if (chunk != null)
-                markers.put(chunk.getMarker(), dir);
+        if (SettingsInterface.ENABLE_MARKER) {
+            Chunk sourceChunk = positions.get(source);
+            for (Direction dir : Direction.values()) {
+                if (dir == Direction.NONE)
+                    continue;
+                Vector2i displacement = dir.getDisplacement(1);
+                Chunk chunk = getChunk(sourceChunk.getX() + displacement.x, sourceChunk.getZ() + displacement.y);
+                if (chunk != null)
+                    markers.put(chunk.getMarker(), dir);
+            }
         }
         return markers;
     }

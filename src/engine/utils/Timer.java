@@ -26,9 +26,9 @@ public class Timer {
      * Get the elapsed time since the last call of this method
      * @return elapsed time since last call, in seconds
      */
-    public float getElapsedTime() {
+    public double getElapsedTime() {
         double time = getTime();
-        float elapsedTime = (float) (time - lastLoopTime);
+        double elapsedTime = (time - lastLoopTime);
         lastLoopTime = time;
         return elapsedTime;
     }

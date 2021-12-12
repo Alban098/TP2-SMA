@@ -17,6 +17,7 @@ public enum SettingIdentifiers {
     MARKER_COOLDOWN("Marker update delay"),
     MARKER_RADIUS("Marker radius"),
     MARKER_ATTENUATION("Marker attenuation"),
+    ENABLE_MARKER("Enable marker"),
     WORLD_SIZE("World size"),
     SHOW_MARKERS("Show Help Markers"),
     A_COLOR("A Objects color"),
@@ -27,6 +28,7 @@ public enum SettingIdentifiers {
     MOUSE_SENSITIVITY("Cam rotation rate"),
     CAMERA_POS_STEP("Cam movement rate"),
     FOV("Field of View"),
+    ANIMATION("Enable animations"),
     FPS_TARGET("Target FPS");
 
     private final String description;

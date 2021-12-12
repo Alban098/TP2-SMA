@@ -174,6 +174,20 @@ public class SettingsContainer {
                 SettingsInterface.SHOW_MARKERS = setting.getValue();
             }
         }));
+        settings.put(SettingIdentifiers.ANIMATION, new Setting<>(SettingIdentifiers.ANIMATION, true, (Setting<Boolean> setting) -> {
+            ImBoolean tmp = new ImBoolean(setting.getValue());
+            if (ImGui.checkbox(setting.getIdentifier().getDescription(), tmp)) {
+                setting.setValue(tmp.get());
+                SettingsInterface.ANIMATION = setting.getValue();
+            }
+        }));
+        settings.put(SettingIdentifiers.ENABLE_MARKER, new Setting<>(SettingIdentifiers.ENABLE_MARKER, true, (Setting<Boolean> setting) -> {
+            ImBoolean tmp = new ImBoolean(setting.getValue());
+            if (ImGui.checkbox(setting.getIdentifier().getDescription(), tmp)) {
+                setting.setValue(tmp.get());
+                SettingsInterface.ENABLE_MARKER = setting.getValue();
+            }
+        }));
         settings.put(SettingIdentifiers.VSYNC, new Setting<>(SettingIdentifiers.VSYNC, true, (Setting<Boolean> setting) -> {
             ImBoolean tmp = new ImBoolean(setting.getValue());
             if (ImGui.checkbox(setting.getIdentifier().getDescription(), tmp)) {
@@ -268,6 +282,8 @@ public class SettingsContainer {
                 case CAMERA_POS_STEP -> SettingsInterface.CAMERA_POS_STEP = (float) setting.getValue()/100f;
                 case FPS_TARGET -> SettingsInterface.TARGET_FPS = (int) setting.getValue();
                 case FOV -> SettingsInterface.FOV = (float) Math.toRadians((int) setting.getValue());
+                case ANIMATION -> SettingsInterface.ANIMATION = (boolean) setting.getValue();
+                case ENABLE_MARKER -> SettingsInterface.ENABLE_MARKER = (boolean) setting.getValue();
 
             }
         }

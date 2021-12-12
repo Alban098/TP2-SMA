@@ -29,7 +29,7 @@ public class Simulation extends ConcreteLogic {
 
     private ByteBuffer[] worldBuffers;
 
-    private float animationPercent;
+    private double animationPercent;
 
     /**
      * Initialize meshes, models and generate the scene of the simulation
@@ -132,10 +132,10 @@ public class Simulation extends ConcreteLogic {
      * @param elapsedTime time elapsed since last update in seconds
      */
     @Override
-    public void update(Window window, float elapsedTime) {
+    public void update(Window window, double elapsedTime) {
         //If the simulation is running, update all objects
         if (!paused) {
-            //Update the world (for help marker attenuation)
+            //Update the world (for help marker attenuation) and stop previous animations
             scene.getWorld().update();
 
             //Update all the Agents
@@ -155,7 +155,7 @@ public class Simulation extends ConcreteLogic {
     public void render(Window window) {
         //If the simulation is running, compute animation
         if (!paused)
-            scene.getWorld().computeSubStates(animationPercent);
+            scene.getWorld().animate(SettingsInterface.ANIMATION ? animationPercent : 1);
         scene.getWorld().renderMarkers();
         //Update the material colors
         aMesh.getMaterial().setAmbientColour(SettingsInterface.A_COLOR);
@@ -196,7 +196,7 @@ public class Simulation extends ConcreteLogic {
      * @param percent the current animation percentage
      */
     @Override
-    public void setPercent(float percent) {
+    public void setPercent(double percent) {
         this.animationPercent = percent;
     }
 

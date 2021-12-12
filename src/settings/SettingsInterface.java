@@ -7,6 +7,8 @@ import org.joml.Vector4f;
  */
 public class SettingsInterface {
 
+    public static boolean ENABLE_MARKER = true;
+    public static boolean ANIMATION = true;
     public static boolean VSYNC = false;
     public static int MAX_MOVE_DIST = 1;
     public static float K_PLUS = 0.1f;

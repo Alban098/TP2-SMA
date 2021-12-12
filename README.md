@@ -87,6 +87,6 @@ To launch the Simulation set the Main Class to ```Main.java```
 
 ## License
 - **[Alban098](https://github.com/Alban098)**
-- **[LouisMeMyself](https://github.com/LouisMeMyself)**
+- **[Louis Peizerat](https://github.com/Louispzt)**
 
 This project is licensed under the **[MIT license](http://opensource.org/licenses/mit-license.php)**

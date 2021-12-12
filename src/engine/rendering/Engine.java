@@ -45,9 +45,9 @@ public class Engine implements Runnable {
     }
 
     protected void gameLoop() {
-        float elapsedTime;
-        float accumulator = 0f;
-        float interval;
+        double elapsedTime;
+        double accumulator = 0f;
+        double interval;
         int nbUpdate;
         while (!window.windowShouldClose()) {
             interval = 1f / SettingsInterface.TARGET_UPS;
@@ -64,7 +64,7 @@ public class Engine implements Runnable {
                 nbUpdate++;
             }
 
-            gameLogic.setPercent(Math.min(accumulator / interval, 1));
+            gameLogic.setPercent(Math.min(accumulator / interval, 1.0));
             render();
 
             window.updateImGui(elapsedTime, nbUpdate);
@@ -80,7 +80,7 @@ public class Engine implements Runnable {
         gameLogic.cleanup();
         window.cleanup();
     }
-    
+
     private void sync() {
         float loopSlot = 1f / SettingsInterface.TARGET_FPS;
         double endTime = timer.getLastLoopTime() + loopSlot;
@@ -96,7 +96,7 @@ public class Engine implements Runnable {
         gameLogic.input(window, mouseInput);
     }
 
-    protected void update(float interval) {
+    protected void update(double interval) {
         gameLogic.update(window, interval);
     }
 

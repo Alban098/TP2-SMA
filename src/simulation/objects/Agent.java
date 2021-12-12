@@ -42,7 +42,7 @@ public class Agent extends RenderableItem {
      * Update the Agent
      * @param elapsedTime time elapsed since last update
      */
-    public void update(float elapsedTime) {
+    public void update(double elapsedTime) {
         //If the Agent isn't a slave to another one
         if (isNotBusy()) {
             //Percepts, Act and Update the memory
@@ -54,12 +54,6 @@ public class Agent extends RenderableItem {
             if (!hasHelp()) {
                 markerCooldown -= elapsedTime;
                 giveUpCooldown -= elapsedTime;
-            }
-        //If the Agent is helping another one, 5% chance to stop doing it
-        } else {
-            if (rand.nextFloat() < 0.05 && master != null) {
-                master.slave = null;
-                master = null;
             }
         }
     }
@@ -151,9 +145,7 @@ public class Agent extends RenderableItem {
                 dist = rand.nextInt(SettingsInterface.MAX_MOVE_DIST) + 1;
                 //Give up after 3 unsuccessfully attempts
                 if (++attempts > 3) {
-                    dir = Direction.NONE;
-                    dist = 0;
-                    break;
+                    return;
                 }
             } while(!world.canMove(this, dir, dist) || !world.canMove(slave, dir, dist));
 
@@ -173,6 +165,7 @@ public class Agent extends RenderableItem {
                 //Put down the item and move
                 if (putDown(true)) {
                     releaseSlave();
+                    world.removeMarker(this);
                     markerCooldown = 0;
                     giveUpCooldown = 0;
                     move(p);
@@ -206,7 +199,6 @@ public class Agent extends RenderableItem {
                 if (carriedObject.getType() == Object.Type.C)
                     releaseSlave();
                 carriedObject = null;
-                world.move(this, Direction.NONE, 0); //Yet another anim hack
                 return true;
             }
         }
@@ -224,7 +216,6 @@ public class Agent extends RenderableItem {
         prob *= prob;
         if (rand.nextFloat() < prob) { //If picking it up
             carriedObject = world.pickUp(this);
-            world.move(this, Direction.NONE, 0); // Just an anim hack
             if (carriedObject.getType() == Object.Type.C) {
                 markerCooldown = SettingsInterface.MARKER_COOLDOWN;
                 world.putMarker(this);
@@ -256,9 +247,7 @@ public class Agent extends RenderableItem {
             dist = rand.nextInt(SettingsInterface.MAX_MOVE_DIST) + 1;
             //Stop if no suitable Direction and distance found after 3 attempts
             if (++attempts > 5) {
-                dir = Direction.NONE;
-                dist = 0;
-                break;
+                return;
             }
         } while(!world.canMove(this, dir, dist));
 
@@ -293,6 +282,7 @@ public class Agent extends RenderableItem {
         if (asking != null && master == null && slave == null && carriedObject == null) {
             asking.slave = this;
             master = asking;
+            world.removeMarker(master);
             return true;
         }
         return false;

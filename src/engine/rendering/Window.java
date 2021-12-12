@@ -159,8 +159,8 @@ public class Window {
         ImGui.newFrame();
     }
 
-    public void updateImGui(float elapsedTime, int nbUpdate) {
-        imGuiLayer.render(elapsedTime, nbUpdate == 0 ? SettingsInterface.TARGET_UPS : (int) (nbUpdate / elapsedTime));
+    public void updateImGui(double elapsedTime, int nbUpdate) {
+        imGuiLayer.render((float) elapsedTime, nbUpdate == 0 ? SettingsInterface.TARGET_UPS : (int) (nbUpdate / elapsedTime));
         ImGui.render();
         imGuiGl3.renderDrawData(ImGui.getDrawData());
 

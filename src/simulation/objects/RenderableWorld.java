@@ -17,8 +17,8 @@ import java.util.Map;
  */
 public class RenderableWorld extends RenderableItem{
 
-    private final Map<Agent, Chunk> lastPosition;
-    private final Map<Agent, Float> lastRotation;
+    protected final Map<Agent, Chunk> lastPosition;
+    protected final Map<Agent, Float> lastRotation;
 
     private final ByteBuffer help_marker_buffer;
     private final Texture help_marker_texture;
@@ -64,13 +64,11 @@ public class RenderableWorld extends RenderableItem{
      * Update the visual variable of an agent
      * this is only used for animation between updates
      * @param agent the Agent to update
-     * @param lastChunk the last chunk where the agent was
      */
-    protected void updateVisual(Agent agent, Chunk lastChunk) {
-        lastPosition.put(agent, lastChunk);
+    protected void updateVisual(Agent agent) {
         Chunk nextPos = positions.get(agent);
-        Direction direction = Direction.get(lastChunk.getX() - nextPos.getX(), lastChunk.getZ() - nextPos.getZ());
-        lastRotation.put(agent, rotations.get(agent));
+        Chunk lastPos = lastPosition.get(agent) == null ? nextPos : lastPosition.get(agent);
+        Direction direction = Direction.get(lastPos.getX() - nextPos.getX(), lastPos.getZ() - nextPos.getZ());
         switch (direction) {
             case NORTH -> rotations.put(agent, 0f);
             case SOUTH -> rotations.put(agent, 180f);
@@ -87,7 +85,7 @@ public class RenderableWorld extends RenderableItem{
      * Update the animation of the Agents
      * @param percent the progress of animation (between 2 updates) from 0 to 1
      */
-    public void computeSubStates(float percent) {
+    public void animate(double percent) {
         for (Agent a : positions.keySet()) {
             Chunk lastPos = lastPosition.get(a);
             Chunk nextPos = positions.get(a);
@@ -96,15 +94,15 @@ public class RenderableWorld extends RenderableItem{
 
             //Linear interpolation between the 2 positions
             if (lastPos != null && nextPos != null && (lastPos.getX() != nextPos.getX() || lastPos.getZ() != nextPos.getZ())) {
-                float x = (1 - percent) * lastPos.getX() + percent * nextPos.getX();
-                float z = (1 - percent) * lastPos.getZ() + percent * nextPos.getZ();
+                float x = (float) ((1 - percent) * lastPos.getX() + percent * nextPos.getX());
+                float z = (float) ((1 - percent) * lastPos.getZ() + percent * nextPos.getZ());
                 a.setPosition(x+.5f, 1, z+.5f);
             } else if (nextPos != null){
                 a.setPosition(nextPos.getX() + 0.5f, 1, nextPos.getZ() + 0.5f);
             }
 
             //Linear interpolation between the 2 rotation
-            float scaledPercent = Math.min(percent * 5, 1);
+            float scaledPercent = (float) Math.min(percent * 5, 1);
             if (lastRot != null && nextRot != null && (!lastRot.equals(nextRot))) {
                 float dRot = nextRot - lastRot;
                 //Find the rotation direction that is the fastest
@@ -120,10 +118,10 @@ public class RenderableWorld extends RenderableItem{
             //update the carried object if it exist
             a.anim();
 
-            //Prevent the animation from looping (in case the agent isn't moving)
+            //Prevent the animation from looping (normally not useful, but just in case for the sake of it)
             if (percent >= 0.99f) {
-                lastPosition.put(a, positions.get(a));
-                lastRotation.put(a, rotations.get(a));
+                lastPosition.put(a, nextPos);
+                lastRotation.put(a, nextRot);
             }
         }
     }
@@ -167,7 +165,7 @@ public class RenderableWorld extends RenderableItem{
             }
 
             //Set the red level according to the Chunk's marker level
-            markerColor.x += chunk.getMarker() * 128;
+            markerColor.x += Math.min(chunk.getMarker() * 127, 127);
 
             objectBuffer.put((byte) objectColor.x);
             objectBuffer.put((byte) objectColor.y);
