@@ -2,7 +2,6 @@ package engine.objects;
 
 import engine.rendering.Mesh;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 /**
  * This class represent an Item that can be rendered by the Engine
@@ -13,7 +12,6 @@ public class RenderableItem {
     private final Vector3f position;
     private float scale;
     private final Vector3f rotation;
-    private final Vector4f addedColor;
 
     /**
      * Create an empty Item, without mesh
@@ -22,7 +20,6 @@ public class RenderableItem {
         position = new Vector3f();
         scale = 1;
         rotation = new Vector3f();
-        addedColor = new Vector4f();
     }
 
     /**
@@ -104,13 +101,5 @@ public class RenderableItem {
      */
     public void setMesh(Mesh mesh) {
         this.mesh = mesh;
-    }
-
-    /**
-     * Return the color offset used when rendering
-     * @return the color offset
-     */
-    public Vector4f getAddedColor() {
-        return addedColor;
     }
 }

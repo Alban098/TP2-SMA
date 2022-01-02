@@ -7,9 +7,9 @@ import org.joml.Vector3f;
  */
 public class PointLight {
 
-    private Vector3f color;
+    private final Vector3f color;
     private Vector3f position;
-    private float intensity;
+    private final float intensity;
     private Attenuation attenuation;
 
     /**
@@ -86,5 +86,8 @@ public class PointLight {
         return attenuation;
     }
 
+    /**
+     * Represent an Attenuation unit that can be applied to a Light Source
+     */
     public record Attenuation(float constant, float linear, float exponent) {}
 }

@@ -17,6 +17,9 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+/**
+ * This class represent a Window used as a render target
+ */
 public class Window {
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
@@ -30,6 +33,13 @@ public class Window {
     private long windowHandle;
     private boolean resized;
 
+    /**
+     * Create a new Window
+     * @param title the Window title
+     * @param width the Window width in pixels
+     * @param height the Window height in pixels
+     * @param imGuiLayer the ImGui Main Layer
+     */
     public Window(String title, int width, int height, ImGuiLayer imGuiLayer) {
         this.title = title;
         this.width = width;
@@ -38,6 +48,9 @@ public class Window {
         this.imGuiLayer = imGuiLayer;
     }
 
+    /**
+     * Initialize the Window
+     */
     public void init() {
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
@@ -116,49 +129,92 @@ public class Window {
         imGuiLayer.init();
     }
 
+    /**
+     * Return the Window id
+     * @return the Window id
+     */
     public long getWindowHandle() {
         return windowHandle;
     }
 
+    /**
+     * Return whether a key is pressed in the Window of not
+     * @param keyCode the key to test for
+     * @return is the Key pressed or not in the Window context
+     */
     public boolean isKeyPressed(int keyCode) {
         return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS;
     }
 
+    /**
+     * Return whether the window should be closed or not
+     * @return Should the window be closed or not
+     */
     public boolean windowShouldClose() {
         return glfwWindowShouldClose(windowHandle);
     }
 
+    /**
+     * Return the Window width in pixels
+     * @return the Window width in pixels
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Return the Window height in pixels
+     * @return the Window height in pixels
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * Return whether the Window has been resized or not
+     * @return Has the Window been resized or not
+     */
     public boolean isResized() {
         return resized;
     }
 
+    /**
+     * Notify that the Window has been resized or not
+     * @param resized the resized flag
+     */
     public void setResized(boolean resized) {
         this.resized = resized;
     }
 
+    /**
+     * Grab the VSync attribute from Setting Container
+     */
     public void updateVSync() {
         glfwSwapInterval(SettingsInterface.VSYNC ? 1 : 0);
     }
 
+    /**
+     * Update the Window by swapping the buffers
+     */
     public void update() {
         updateVSync();
         glfwSwapBuffers(windowHandle);
         glfwPollEvents();
     }
 
+    /**
+     * Prepare the ImGui Main Layer
+     */
     public void prepareImGui() {
         imGuiGlfw.newFrame();
         ImGui.newFrame();
     }
 
+    /**
+     * Update the ImGui Main Layer
+     * @param elapsedTime the elapsed time in seconds
+     * @param nbUpdate the number of update since last ImGui update
+     */
     public void updateImGui(double elapsedTime, int nbUpdate) {
         imGuiLayer.render((float) elapsedTime, nbUpdate == 0 ? SettingsInterface.TARGET_UPS : (int) (nbUpdate / elapsedTime));
         ImGui.render();
@@ -172,12 +228,18 @@ public class Window {
         }
     }
 
+    /**
+     * Cleanup the Window and dispose it
+     */
     public void cleanup() {
         imGuiGl3.dispose();
         imGuiGlfw.dispose();
         ImGui.destroyContext();
     }
 
+    /**
+     * Initialize the ImGui Main Layer
+     */
     public void prepareImGuiTexture() {
         imGuiLayer.init();
     }

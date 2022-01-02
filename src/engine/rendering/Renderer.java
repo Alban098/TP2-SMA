@@ -8,12 +8,14 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import settings.SettingsInterface;
-
 import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 
+/**
+ * This class represent a Renderer used to render everything in the Engine
+ */
 public class Renderer {
 
     private static final int MAX_POINT_LIGHTS = 5;
@@ -28,16 +30,23 @@ public class Renderer {
 
     private final float specularPower;
 
+    /**
+     * Create a new Renderer
+     */
     public Renderer() {
         transformation = new Transformation();
         specularPower = 10f;
     }
 
+    /**
+     * Initialize the Renderer, create Shaders and Uniforms
+     * @throws Exception thrown when unable to link shaders or to load resources
+     */
     public void init() throws Exception {
         // Create shader
         shaderProgram = new ShaderProgram();
-        shaderProgram.createVertexShader(Utils.loadResource("/shaders/vertex.vs"));
-        shaderProgram.createFragmentShader(Utils.loadResource("/shaders/fragment.fs"));
+        shaderProgram.createVertexShader(Utils.loadResource("/shaders/entities/vertex.glsl"));
+        shaderProgram.createFragmentShader(Utils.loadResource("/shaders/entities/fragment.glsl"));
         shaderProgram.link();
 
         shaderProgram.createUniform("projectionMatrix");
@@ -50,8 +59,8 @@ public class Renderer {
         shaderProgram.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
 
         worldShaderProgram = new ShaderProgram();
-        worldShaderProgram.createVertexShader(Utils.loadResource("/shaders/world_vertex.vs"));
-        worldShaderProgram.createFragmentShader(Utils.loadResource("/shaders/world_fragment.fs"));
+        worldShaderProgram.createVertexShader(Utils.loadResource("/shaders/world/vertex.glsl"));
+        worldShaderProgram.createFragmentShader(Utils.loadResource("/shaders/world/fragment.glsl"));
         worldShaderProgram.link();
 
         worldShaderProgram.createUniform("projectionMatrix");
@@ -66,8 +75,8 @@ public class Renderer {
         worldShaderProgram.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
 
         skyBoxShaderProgram = new ShaderProgram();
-        skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/sb_vertex.vs"));
-        skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/sb_fragment.fs"));
+        skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/skybox/vertex.glsl"));
+        skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/skybox/fragment.glsl"));
         skyBoxShaderProgram.link();
 
         skyBoxShaderProgram.createUniform("projectionMatrix");
@@ -76,10 +85,19 @@ public class Renderer {
         skyBoxShaderProgram.createUniform("ambientLight");
     }
 
+    /**
+     * Clear the color of the screen
+     */
     public void clear() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    /**
+     * Render the scene to the screen
+     * @param window the Window to render to
+     * @param camera the Camera to render from
+     * @param scene the Scene to render
+     */
     public void render(Window window, Camera camera, Scene scene) {
         clear();
 
@@ -90,12 +108,16 @@ public class Renderer {
         transformation.updateProjectionMatrix(SettingsInterface.FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         transformation.updateViewMatrix(camera);
 
-        renderScene(window, camera, scene);
-        renderWorld(window, camera, scene);
+        renderScene(scene);
+        renderWorld(scene);
         renderSkyBox(window, camera, scene);
     }
 
-    private void renderWorld(Window window, Camera camera, Scene scene) {
+    /**
+     * Render the world to the screen
+     * @param scene the Scene to render to World of
+     */
+    private void renderWorld(Scene scene) {
         worldShaderProgram.bind();
 
         Matrix4f projectionMatrix = transformation.getProjectionMatrix();
@@ -120,6 +142,12 @@ public class Renderer {
         worldShaderProgram.unbind();
     }
 
+    /**
+     * Render the Lights by loading them to the GPU
+     * @param viewMatrix the view matrix of the Scene
+     * @param sceneLight the Light to render
+     * @param shader the Shader used to render
+     */
     private void renderLights(Matrix4f viewMatrix, SceneLight sceneLight, ShaderProgram shader) {
         shader.setUniform("ambientLight", sceneLight.getAmbientLight());
         shader.setUniform("specularPower", specularPower);
@@ -140,7 +168,11 @@ public class Renderer {
         }
     }
 
-    public void renderScene(Window window, Camera camera, Scene scene) {
+    /**
+     * Render the Items of the Scene to the screen
+     * @param scene the Scene to render the Items of
+     */
+    public void renderScene(Scene scene) {
         shaderProgram.bind();
 
         Matrix4f projectionMatrix = transformation.getProjectionMatrix();
@@ -166,6 +198,12 @@ public class Renderer {
         shaderProgram.unbind();
     }
 
+    /**
+     * Render the Skybox to the screen
+     * @param window the Window to render to
+     * @param camera the Camera to render from
+     * @param scene the Scene to render the Skybox of
+     */
     private void renderSkyBox(Window window, Camera camera, Scene scene) {
         skyBoxShaderProgram.bind();
 
@@ -188,6 +226,9 @@ public class Renderer {
         skyBoxShaderProgram.unbind();
     }
 
+    /**
+     * Cleanup the renderer by cleaning up the shaders
+     */
     public void cleanup() {
         if (shaderProgram != null)
             shaderProgram.cleanup();

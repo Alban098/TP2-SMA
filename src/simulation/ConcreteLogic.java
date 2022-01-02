@@ -130,6 +130,7 @@ public abstract class ConcreteLogic implements ILogic {
         Map<Mesh, List<RenderableItem>> mapMeshes = scene.getMeshes();
         for (Mesh mesh : mapMeshes.keySet()) {
             mesh.cleanUp();
+            mesh.clearSamplers();
         }
         scene.getWorld().cleanup();
     }

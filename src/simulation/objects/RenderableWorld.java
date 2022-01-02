@@ -217,5 +217,6 @@ public class RenderableWorld extends RenderableItem{
      */
     public void cleanup() {
         getMesh().cleanUp();
+        getMesh().clearSamplers();
     }
 }

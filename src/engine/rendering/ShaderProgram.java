@@ -10,6 +10,9 @@ import org.joml.Vector4f;
 import static org.lwjgl.opengl.GL20.*;
 import org.lwjgl.system.MemoryStack;
 
+/**
+ * This class represent a Shader used by the renderer
+ */
 public class ShaderProgram {
 
     private final int programId;
@@ -17,6 +20,10 @@ public class ShaderProgram {
     private int fragmentShaderId;
     private final Map<String, Integer> uniforms;
 
+    /**
+     * Create a new Shader
+     * @throws Exception thrown when unable to create the Shader
+     */
     public ShaderProgram() throws Exception {
         programId = glCreateProgram();
         if (programId == 0) {
@@ -25,6 +32,11 @@ public class ShaderProgram {
         uniforms = new HashMap<>();
     }
 
+    /**
+     * Create a Uniform
+     * @param uniformName the name of the Uniform
+     * @throws Exception thrown when unable to create the uniform
+     */
     public void createUniform(String uniformName) throws Exception {
         int uniformLocation = glGetUniformLocation(programId, uniformName);
         if (uniformLocation < 0) {
@@ -33,12 +45,22 @@ public class ShaderProgram {
         uniforms.put(uniformName, uniformLocation);
     }
 
+    /**
+     * Create a Uniform array of type PointLight
+     * @param uniformName the name of the Uniform
+     * @throws Exception thrown when unable to create the uniform
+     */
     public void createPointLightListUniform(String uniformName, int size) throws Exception {
         for (int i = 0; i < size; i++) {
             createPointLightUniform(uniformName + "[" + i + "]");
         }
     }
 
+    /**
+     * Create a Uniform of type PointLight
+     * @param uniformName the name of the Uniform
+     * @throws Exception thrown when unable to create the uniform
+     */
     public void createPointLightUniform(String uniformName) throws Exception {
         createUniform(uniformName + ".colour");
         createUniform(uniformName + ".position");
@@ -48,6 +70,11 @@ public class ShaderProgram {
         createUniform(uniformName + ".att.exponent");
     }
 
+    /**
+     * Create a Uniform of type Material
+     * @param uniformName the name of the Uniform
+     * @throws Exception thrown when unable to create the uniform
+     */
     public void createMaterialUniform(String uniformName) throws Exception {
         createUniform(uniformName + ".ambient");
         createUniform(uniformName + ".diffuse");
@@ -57,6 +84,11 @@ public class ShaderProgram {
         createUniform(uniformName + ".reflectance");
     }
 
+    /**
+     * Load a Uniform of type Matrix4f
+     * @param uniformName the name of the Uniform to load
+     * @param value the value to load
+     */
     public void setUniform(String uniformName, Matrix4f value) {
         // Dump the matrix into a float buffer
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -65,27 +97,57 @@ public class ShaderProgram {
         }
     }
 
+    /**
+     * Load a Uniform of type Integer
+     * @param uniformName the name of the Uniform to load
+     * @param value the value to load
+     */
     public void setUniform(String uniformName, int value) {
         glUniform1i(uniforms.get(uniformName), value);
     }
 
+    /**
+     * Load a Uniform of type Float
+     * @param uniformName the name of the Uniform to load
+     * @param value the value to load
+     */
     public void setUniform(String uniformName, float value) {
         glUniform1f(uniforms.get(uniformName), value);
     }
 
+    /**
+     * Load a Uniform of type Vector3f
+     * @param uniformName the name of the Uniform to load
+     * @param value the value to load
+     */
     public void setUniform(String uniformName, Vector3f value) {
         glUniform3f(uniforms.get(uniformName), value.x, value.y, value.z);
     }
 
+    /**
+     * Load a Uniform of type Vector4f
+     * @param uniformName the name of the Uniform to load
+     * @param value the value to load
+     */
     public void setUniform(String uniformName, Vector4f value) {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
+    /**
+     * Load a Uniform of type PointLight by its id
+     * @param uniformName the name of the Uniform to load
+     * @param pointLight the value to load
+     * @param pos the id of the Light
+     */
     public void setUniform(String uniformName, PointLight pointLight, int pos) {
         setUniform(uniformName + "[" + pos + "]", pointLight);
     }
 
-
+    /**
+     * Load a Uniform of type PointLight
+     * @param uniformName the name of the Uniform to load
+     * @param pointLight the value to load
+     */
     public void setUniform(String uniformName, PointLight pointLight) {
         setUniform(uniformName + ".colour", pointLight.getColor());
         setUniform(uniformName + ".position", pointLight.getPosition());
@@ -96,7 +158,11 @@ public class ShaderProgram {
         setUniform(uniformName + ".att.exponent", att.exponent());
     }
 
-
+    /**
+     * Load a Uniform of type Material
+     * @param uniformName the name of the Uniform to load
+     * @param material the value to load
+     */
     public void setUniform(String uniformName, Material material) {
         setUniform(uniformName + ".ambient", material.getAmbientColour());
         setUniform(uniformName + ".diffuse", material.getDiffuseColour());
@@ -106,14 +172,31 @@ public class ShaderProgram {
         setUniform(uniformName + ".reflectance", material.getReflectance());
     }
 
+    /**
+     * Create a Vertex Shader from a shader file
+     * @param shaderCode Path to the shader file
+     * @throws Exception thrown when unable to load the Shader file
+     */
     public void createVertexShader(String shaderCode) throws Exception {
         vertexShaderId = createShader(shaderCode, GL_VERTEX_SHADER);
     }
 
+    /**
+     * Create a Fragment Shader from a shader file
+     * @param shaderCode Path to the shader file
+     * @throws Exception thrown when unable to load the Shader file
+     */
     public void createFragmentShader(String shaderCode) throws Exception {
         fragmentShaderId = createShader(shaderCode, GL_FRAGMENT_SHADER);
     }
 
+    /**
+     * Create a new Shader from a shader code file
+     * @param shaderCode Path to the shader file
+     * @param shaderType the Shader type
+     * @return the Shader id
+     * @throws Exception thrown when unable to load the Shader file
+     */
     protected int createShader(String shaderCode, int shaderType) throws Exception {
         int shaderId = glCreateShader(shaderType);
         if (shaderId == 0) {
@@ -132,6 +215,10 @@ public class ShaderProgram {
         return shaderId;
     }
 
+    /**
+     * Validate and Link the Shader program to the GPU
+     * @throws Exception thrown when unable to Link or Validate
+     */
     public void link() throws Exception {
         glLinkProgram(programId);
         if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
@@ -151,14 +238,23 @@ public class ShaderProgram {
         }
     }
 
+    /**
+     * Bind the Shader for rendering
+     */
     public void bind() {
         glUseProgram(programId);
     }
 
+    /**
+     * Unbind the Shader
+     */
     public void unbind() {
         glUseProgram(0);
     }
 
+    /**
+     * Cleanup the Shader
+     */
     public void cleanup() {
         unbind();
         if (programId != 0) {

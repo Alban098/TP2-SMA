@@ -31,6 +31,9 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
+/**
+ * This class represent a 3D Mesh that can be rendered by the Engine
+ */
 public class Mesh {
 
     private final int vaoId;
@@ -39,6 +42,13 @@ public class Mesh {
     private Material material;
     private final Map<Integer, Texture> extra_samplers;
 
+    /**
+     * Create a new Mesh from RAW data
+     * @param positions Vertex Position (3 floats)
+     * @param textCoords Vertex UVs (2 floats)
+     * @param normals Vertex Normals (3 floats)
+     * @param indices Triangle indices (1 int)
+     */
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
         FloatBuffer posBuffer = null;
         FloatBuffer textCoordsBuffer = null;
@@ -108,23 +118,44 @@ public class Mesh {
         extra_samplers = new HashMap<>();
     }
 
+    /**
+     * Return the Mesh Material
+     * @return the Mesh Material
+     */
     public Material getMaterial() {
         return material;
     }
 
+    /**
+     * Set the Mesh Material
+     * @param material the new Mesh Material
+     * @return the Mesh, to chain method calls
+     */
     public Mesh setMaterial(Material material) {
         this.material = material;
         return this;
     }
 
+    /**
+     * Return the Mesh VAO id
+     * @return the Mesh VAO id
+     */
     public int getVaoId() {
         return vaoId;
     }
 
+    /**
+     * Return the number of Vertices of the Mesh
+     * @return the number of Vertices of the Mesh
+     */
     public int getVertexCount() {
         return vertexCount;
     }
 
+    /**
+     * Initialize the renderer to render the Mesh
+     * by binding Textures and VAO
+     */
     private void initRender() {
         Texture texture = material.getTexture();
         Texture normal = material.getNormal();
@@ -150,18 +181,30 @@ public class Mesh {
         glBindVertexArray(getVaoId());
     }
 
+    /**
+     * End the renderer for this Mesh
+     * by unbinding Texture and VAO
+     */
     private void endRender() {
         // Restore state
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    /**
+     * Render the Mesh
+     */
     public void render() {
         initRender();
         glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
         endRender();
     }
 
+    /**
+     * Render a list of Items that are represented by this Mesh
+     * @param gameItems the list of Items to render
+     * @param consumer a Function taking the current Item called before rendering (usually for loading uniforms)
+     */
     public void renderList(List<RenderableItem> gameItems, Consumer<RenderableItem> consumer) {
         initRender();
 
@@ -175,7 +218,9 @@ public class Mesh {
         endRender();
     }
 
-
+    /**
+     * Clean up the Mesh and its Textures/VAO/VBOs
+     */
     public void cleanUp() {
         glDisableVertexAttribArray(0);
 
@@ -196,10 +241,18 @@ public class Mesh {
         glDeleteVertexArrays(vaoId);
     }
 
+    /**
+     * Add a new Texture to the model along with its texture location (location from GLSL shaders)
+     * @param textureUnit the Texture location (from GLSL shaders)
+     * @param texture the Texture to add
+     */
     public void addTexture(int textureUnit, Texture texture) {
         extra_samplers.put(textureUnit, texture);
     }
 
+    /**
+     * Clear the Texture map
+     */
     public void clearSamplers() {
         extra_samplers.clear();
     }

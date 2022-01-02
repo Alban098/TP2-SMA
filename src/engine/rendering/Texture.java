@@ -13,22 +13,39 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.*;
 
+/**
+ * This class represent a Texture
+ */
 public class Texture {
 
     private final int id;
     private final int width;
     private final int height;
 
+    /**
+     * Create a new Texture from a file
+     * @param fileName Path to the texture file
+     * @throws Exception thrown when unable to load the file
+     */
     public Texture(String fileName) throws Exception {
         this(loadTexture(fileName));
     }
 
+    /**
+     * Create a new empty Texture from attributes
+     * @param attrib an Array of int {Texture id, width in pixels, height in pixels}
+     */
     public Texture(int[] attrib) {
         this.id = attrib[0];
         this.width = attrib[1];
         this.height = attrib[2];
     }
 
+    /**
+     * Create a new empty Texture
+     * @param width the Texture width in pixels
+     * @param height the Texture height in pixels
+     */
     public Texture(int width, int height) {
         this.width = width;
         this.height = height;
@@ -44,14 +61,27 @@ public class Texture {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, BufferUtils.createByteBuffer(width * height * 4));
     }
 
+    /**
+     * Bind the texture for rendering
+     */
     public void bind() {
         glBindTexture(GL_TEXTURE_2D, id);
     }
 
+    /**
+     * Return the Texture id
+     * @return the Texture id
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Load a texture from a file
+     * @param fileName the Path to the texture file
+     * @return an Array containing {Texture ID, width in pixels, height in pixels}
+     * @throws Exception thrown when unable to load the file
+     */
     private static int[] loadTexture(String fileName) throws Exception {
         int width;
         int height;
@@ -88,12 +118,11 @@ public class Texture {
 
         stbi_image_free(buf);
 
-        return new int[]{textureId, width, height};
+        return new int[] {textureId, width, height};
     }
 
     /**
      * Load a byte buffer in the texture
-     *
      * @param buf the buffer to load
      */
     public void load(ByteBuffer buf) {
@@ -101,6 +130,9 @@ public class Texture {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
     }
 
+    /**
+     * Cleanup the Texture
+     */
     public void cleanup() {
         glDeleteTextures(id);
     }
