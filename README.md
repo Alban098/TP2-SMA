@@ -51,7 +51,8 @@ A Settings window enable the modification of the simulation at runtime (profiles
 - Change the color used for each type of object
 - Change the camera sensitivity
 - Change the update rate and FPS
-- Enabled/Disable VSync
+- Enable/Disable VSync
+- Enable/Disable Agent animations
 - Show/Hide markers on the 3D view
 
 ## How to Use

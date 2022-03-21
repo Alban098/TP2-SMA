@@ -235,7 +235,7 @@ public class Agent extends RenderableItem {
         if (lookForAgentAskingHelp())
             return;
         //If there is marker on the ground, move to the adjacent Chunk with the most marker, then return
-        if (p.helpMarker() > 0 && tryMoveToMarker() && carriedObject == null)
+        if (p.helpMarker() > 0 && carriedObject == null && tryMoveToMarker())
             return;
 
         //Otherwise, juste generate a Direction and distance and move according to that
